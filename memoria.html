@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Memória</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    background: #fafafa;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  #tabuleiro {
+    width: 360px;
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-gap: 10px;
+  }
+  .carta {
+    width: 80px;
+    height: 80px;
+    background: #2196f3;
+    color: white;
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 8px;
+    user-select: none;
+    position: relative;
+    perspective: 600px;
+  }
+  .frente, .verso {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+    transition: transform 0.4s;
+  }
+  .frente {
+    background: #2196f3;
+    color: white;
+    transform: rotateY(0deg);
+  }
+  .verso {
+    background: #e3f2fd;
+    color: #2196f3;
+    font-weight: bold;
+    font-size: 36px;
+    transform: rotateY(180deg);
+  }
+  .carta.flipped .frente {
+    transform: rotateY(180deg);
+  }
+  .carta.flipped .verso {
+    transform: rotateY(0deg);
+  }
+  #mensagem {
+    margin-top: 20px;
+    font-size: 18px;
+  }
+  #reiniciar {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <h1>Jogo da Memória</h1>
+  <div id="tabuleiro"></div>
+  <div id="mensagem"></div>
+  <button id="reiniciar" onclick="reiniciarJogo()">Reiniciar</button>
+
+<script>
+const tabuleiro = document.getElementById('tabuleiro');
+const mensagem = document.getElementById('mensagem');
+const reiniciarBtn = document.getElementById('reiniciar');
+
+const simbolos = ['🍎','🍌','🍒','🍇','🍉','🥝','🍍','🍑'];
+let cartas = [];
+let primeiroClique = null;
+let segundoClique = null;
+let bloqueado = true; // Começa bloqueado porque as cartas estão viradas
+let paresEncontrados = 0;
+
+function embaralhar(array) {
+  for (let i = array.length -1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function criarCartas() {
+  cartas = [];
+  for (let i = 0; i < simbolos.length; i++) {
+    cartas.push({id: i * 2, simbolo: simbolos[i], combinado: false});
+    cartas.push({id: i * 2 + 1, simbolo: simbolos[i], combinado: false});
+  }
+  cartas = embaralhar(cartas);
+}
+
+function criarTabuleiro() {
+  tabuleiro.innerHTML = "";
+  cartas.forEach(carta => {
+    const div = document.createElement('div');
+    div.classList.add('carta', 'flipped'); // começa virada
+    div.dataset.id = carta.id;
+    div.dataset.simbolo = carta.simbolo;
+    div.innerHTML = `
+      <div class="frente">?</div>
+      <div class="verso">${carta.simbolo}</div>
+    `;
+    div.addEventListener('click', () => virarCarta(div));
+    tabuleiro.appendChild(div);
+  });
+}
+
+function virarCarta(cartaDiv) {
+  if (bloqueado) return;
+  if (cartaDiv.classList.contains('flipped')) return;
+
+  cartaDiv.classList.add('flipped');
+
+  if (!primeiroClique) {
+    primeiroClique = cartaDiv;
+  } else if (!segundoClique) {
+    segundoClique = cartaDiv;
+    bloquearTabuleiro();
+
+    if (primeiroClique.dataset.simbolo === segundoClique.dataset.simbolo) {
+      marcarCombinado(primeiroClique);
+      marcarCombinado(segundoClique);
+      resetarJogada();
+      paresEncontrados++;
+      verificarFim();
+    } else {
+      setTimeout(() => {
+        primeiroClique.classList.remove('flipped');
+        segundoClique.classList.remove('flipped');
+        resetarJogada();
+      }, 1000);
+    }
+  }
+}
+
+function bloquearTabuleiro() {
+  bloqueado = true;
+}
+
+function resetarJogada() {
+  primeiroClique = null;
+  segundoClique = null;
+  bloqueado = false;
+}
+
+function marcarCombinado(cartaDiv) {
+  const id = parseInt(cartaDiv.dataset.id);
+  const carta = cartas.find(c => c.id === id);
+  if (carta) carta.combinado = true;
+}
+
+function verificarFim() {
+  if (paresEncontrados === simbolos.length) {
+    mensagem.textContent = "Parabéns! Você encontrou todos os pares!";
+    reiniciarBtn.style.display = "inline-block";
+  }
+}
+
+function reiniciarJogo() {
+  paresEncontrados = 0;
+  mensagem.textContent = "";
+  reiniciarBtn.style.display = "none";
+  criarCartas();
+  criarTabuleiro();
+  // Mostra cartas por 2 segundos e esconde
+  setTimeout(() => {
+    const todasCartas = document.querySelectorAll('.carta');
+    todasCartas.forEach(carta => carta.classList.remove('flipped'));
+    bloqueado = false;
+  }, 2000);
+}
+
+reiniciarJogo();
+</script>
+</body>
+</html>

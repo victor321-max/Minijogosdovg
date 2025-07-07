@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Forca</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    background: #f7f7f7;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  #palavra {
+    font-size: 32px;
+    letter-spacing: 10px;
+    margin: 20px 0;
+  }
+  #letras {
+    margin: 20px 0;
+  }
+  button.letra {
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    width: 40px;
+  }
+  #tentativas {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  #mensagem {
+    font-size: 20px;
+    margin-top: 20px;
+    color: green;
+  }
+  #reiniciar {
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+  <h1>Jogo da Forca</h1>
+
+  <div id="palavra"></div>
+  <div id="letras"></div>
+  <div id="tentativas"></div>
+  <div id="mensagem"></div>
+  <button id="reiniciar" onclick="reiniciarJogo()">Reiniciar</button>
+
+<script>
+const palavras = ["CAPOEIRA", "BRASIL", "JOGADOR", "VITOR", "AMIZADE", "COMPUTADOR", "PROGRAMACAO", "FUTEBOL", "MUSICA"];
+let palavraSecreta = "";
+let letrasCertas = [];
+let letrasErradas = [];
+let tentativasRestantes = 6;
+
+const palavraDiv = document.getElementById('palavra');
+const letrasDiv = document.getElementById('letras');
+const tentativasDiv = document.getElementById('tentativas');
+const mensagemDiv = document.getElementById('mensagem');
+const reiniciarBtn = document.getElementById('reiniciar');
+
+function escolherPalavra() {
+  palavraSecreta = palavras[Math.floor(Math.random() * palavras.length)];
+}
+
+function mostrarPalavra() {
+  let display = "";
+  for (let letra of palavraSecreta) {
+    if (letrasCertas.includes(letra)) {
+      display += letra + " ";
+    } else {
+      display += "_ ";
+    }
+  }
+  palavraDiv.textContent = display.trim();
+}
+
+function criarTeclado() {
+  letrasDiv.innerHTML = "";
+  for (let i = 65; i <= 90; i++) {
+    const letra = String.fromCharCode(i);
+    const btn = document.createElement('button');
+    btn.textContent = letra;
+    btn.classList.add('letra');
+    btn.addEventListener('click', () => tentarLetra(letra));
+    letrasDiv.appendChild(btn);
+  }
+}
+
+function tentarLetra(letra) {
+  if (letrasCertas.includes(letra) || letrasErradas.includes(letra)) return;
+
+  if (palavraSecreta.includes(letra)) {
+    letrasCertas.push(letra);
+  } else {
+    letrasErradas.push(letra);
+    tentativasRestantes--;
+  }
+
+  atualizarJogo();
+}
+
+function atualizarJogo() {
+  mostrarPalavra();
+  tentativasDiv.textContent = `Tentativas restantes: ${tentativasRestantes}`;
+  atualizarTeclado();
+
+  if (!palavraDiv.textContent.includes("_")) {
+    mensagemDiv.style.color = "green";
+    mensagemDiv.textContent = "Parabéns! Você ganhou!";
+    reiniciarBtn.style.display = "inline-block";
+    bloquearTeclado();
+  } else if (tentativasRestantes <= 0) {
+    mensagemDiv.style.color = "red";
+    mensagemDiv.textContent = `Você perdeu! A palavra era: ${palavraSecreta}`;
+    reiniciarBtn.style.display = "inline-block";
+    bloquearTeclado();
+  }
+}
+
+function atualizarTeclado() {
+  const botoes = letrasDiv.querySelectorAll('button');
+  botoes.forEach(btn => {
+    if (letrasCertas.includes(btn.textContent) || letrasErradas.includes(btn.textContent)) {
+      btn.disabled = true;
+      btn.style.opacity = 0.5;
+    }
+  });
+}
+
+function bloquearTeclado() {
+  const botoes = letrasDiv.querySelectorAll('button');
+  botoes.forEach(btn => btn.disabled = true);
+}
+
+function reiniciarJogo() {
+  letrasCertas = [];
+  letrasErradas = [];
+  tentativasRestantes = 6;
+  mensagemDiv.textContent = "";
+  reiniciarBtn.style.display = "none";
+  escolherPalavra();
+  mostrarPalavra();
+  criarTeclado();
+  tentativasDiv.textContent = `Tentativas restantes: ${tentativasRestantes}`;
+}
+
+reiniciarJogo();
+</script>
+
+</body>
+</html>

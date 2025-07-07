@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Velha</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #fafafa;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  #modoJogo {
+    margin-bottom: 15px;
+  }
+  button {
+    margin: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #tabuleiro {
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 5px;
+    width: 320px;
+  }
+  .casa {
+    width: 100px;
+    height: 100px;
+    background: #2196f3;
+    color: white;
+    font-size: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+  }
+  .casa:hover {
+    background: #1976d2;
+  }
+  #mensagem {
+    margin-top: 15px;
+    font-size: 20px;
+  }
+  #placar {
+    margin-top: 15px;
+    font-size: 18px;
+  }
+  select {
+    padding: 7px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Jogo da Velha</h1>
+
+<div id="modoJogo">
+  <label>Modo de Jogo: </label>
+  <select id="seletorModo">
+    <option value="2jogadores">2 Jogadores</option>
+    <option value="iaFacil">IA Fácil</option>
+    <option value="iaMedio">IA Médio</option>
+    <option value="iaDificil">IA Difícil</option>
+  </select>
+  <button onclick="reiniciarJogo()">Reiniciar</button>
+</div>
+
+<div id="tabuleiro"></div>
+
+<div id="mensagem"></div>
+<div id="placar">Jogador X: 0 | Jogador O: 0</div>
+
+<script>
+const tabuleiro = document.getElementById('tabuleiro');
+const mensagem = document.getElementById('mensagem');
+const placarDiv = document.getElementById('placar');
+const seletorModo = document.getElementById('seletorModo');
+
+let turno = 'X';
+let tab = Array(9).fill('');
+let jogoAtivo = true;
+let placar = { X: 0, O: 0 };
+
+function criarTabuleiro() {
+  tabuleiro.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const casa = document.createElement('div');
+    casa.classList.add('casa');
+    casa.dataset.index = i;
+    casa.addEventListener('click', () => jogar(i));
+    tabuleiro.appendChild(casa);
+  }
+  mensagem.textContent = `Turno do jogador ${turno}`;
+}
+
+function jogar(i) {
+  if (!jogoAtivo || tab[i] !== '') return;
+
+  tab[i] = turno;
+  atualizarTabuleiro();
+
+  if (verificarVitoria(turno)) {
+    placar[turno]++;
+    placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+    mensagem.textContent = `Jogador ${turno} venceu!`;
+    jogoAtivo = false;
+    return;
+  }
+
+  if (!tab.includes('')) {
+    mensagem.textContent = 'Empate!';
+    jogoAtivo = false;
+    return;
+  }
+
+  trocarTurno();
+
+  if (seletorModo.value !== '2jogadores' && turno === 'O' && jogoAtivo) {
+    // Jogada da IA
+    setTimeout(jogadaIA, 400);
+  }
+}
+
+function atualizarTabuleiro() {
+  const casas = document.querySelectorAll('.casa');
+  casas.forEach((casa, i) => {
+    casa.textContent = tab[i];
+  });
+}
+
+function trocarTurno() {
+  turno = turno === 'X' ? 'O' : 'X';
+  mensagem.textContent = `Turno do jogador ${turno}`;
+}
+
+function verificarVitoria(jogador) {
+  const vitorias = [
+    [0,1,2],[3,4,5],[6,7,8], // linhas
+    [0,3,6],[1,4,7],[2,5,8], // colunas
+    [0,4,8],[2,4,6]          // diagonais
+  ];
+  return vitorias.some(comb => comb.every(i => tab[i] === jogador));
+}
+
+function jogadaIA() {
+  const nivel = seletorModo.value;
+  let jogada;
+
+  if (nivel === 'iaFacil') {
+    jogada = jogadaRandomica();
+  } else if (nivel === 'iaMedio') {
+    jogada = jogadaMedio();
+  } else if (nivel === 'iaDificil') {
+    jogada = jogadaMinimax(tab, 'O').index;
+  }
+
+  if (jogada !== undefined) {
+    tab[jogada] = 'O';
+    atualizarTabuleiro();
+
+    if (verificarVitoria('O')) {
+      placar['O']++;
+      placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+      mensagem.textContent = 'Jogador O (IA) venceu!';
+      jogoAtivo = false;
+      return;
+    }
+
+    if (!tab.includes('')) {
+      mensagem.textContent = 'Empate!';
+      jogoAtivo = false;
+      return;
+    }
+
+    trocarTurno();
+  }
+}
+
+function jogadaRandomica() {
+  const vazias = tab.map((v,i) => v === '' ? i : null).filter(v => v !== null);
+  if (vazias.length === 0) return undefined;
+  return vazias[Math.floor(Math.random() * vazias.length)];
+}
+
+function jogadaMedio() {
+  // Tenta vencer
+  for (let i = 0; i < 9; i++) {
+    if (tab[i] === '') {
+      tab[i] = 'O';
+      if (verificarVitoria('O')) {
+        tab[i] = '';
+        return i;
+      }
+      tab[i] = '';
+    }
+  }
+  // Tenta bloquear X
+  for (let i = 0; i < 9; i++) {
+    if (tab[i] === '') {
+      tab[i] = 'X';
+      if (verificarVitoria('X')) {
+        tab[i] = '';
+        return i;
+      }
+      tab[i] = '';
+    }
+  }
+  // Senão joga aleatório
+  return jogadaRandomica();
+}
+
+// Minimax (IA difícil)
+function jogadaMinimax(nTab, jogador) {
+  const oposto = jogador === 'O' ? 'X' : 'O';
+
+  if (verificarVitoria('X')) return {score: -10};
+  if (verificarVitoria('O')) return {score: 10};
+  if (!nTab.includes('')) return {score: 0};
+
+  let moves = [];
+
+  for (let i = 0; i < 9; i++) {
+    if (nTab[i] === '') {
+      let move = {};
+      move.index = i;
+      nTab[i] = jogador;
+
+      let result = jogadaMinimax(nTab, oposto);
+      move.score = result.score;
+
+      nTab[i] = '';
+      moves.push(move);
+    }
+  }
+
+  let melhorMove;
+  if (jogador === 'O') {
+    let melhorScore = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > melhorScore) {
+        melhorScore = moves[i].score;
+        melhorMove = moves[i];
+      }
+    }
+  } else {
+    let melhorScore = Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < melhorScore) {
+        melhorScore = moves[i].score;
+        melhorMove = moves[i];
+      }
+    }
+  }
+
+  return melhorMove;
+}
+
+function reiniciarJogo() {
+  tab = Array(9).fill('');
+  turno = 'X';
+  jogoAtivo = true;
+  mensagem.textContent = `Turno do jogador ${turno}`;
+  placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+  criarTabuleiro();
+}
+
+seletorModo.addEventListener('change', () => {
+  reiniciarJogo();
+});
+
+criarTabuleiro();
+</script>
+
+</body>
+</html>
