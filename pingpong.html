@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ping Pong</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      color: #00bcd4;
+      margin-top: 10px;
+    }
+    canvas {
+      background: black;
+      border: 3px solid #00bcd4;
+      display: block;
+      margin: 10px auto;
+    }
+    .controles {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+    .coluna {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .botao {
+      width: 60px;
+      height: 60px;
+      font-size: 22px;
+      background: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #00bcd4;
+    }
+    select {
+      font-size: 16px;
+      padding: 5px 10px;
+      margin: 10px;
+      background: #222;
+      color: white;
+      border: 1px solid #00bcd4;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ping Pong</h1>
+
+  <select id="modo">
+    <option value="2jogadores">2 Jogadores</option>
+    <option value="iaFacil">Contra IA - Fácil</option>
+    <option value="iaMedio">Contra IA - Médio</option>
+    <option value="iaDificil">Contra IA - Difícil</option>
+  </select>
+
+  <canvas id="pong" width="600" height="400"></canvas>
+
+  <div class="controles">
+    <div class="coluna">
+      <button class="botao" ontouchstart="raqueteA.up=true" ontouchend="raqueteA.up=false">⬆️</button>
+      <button class="botao" ontouchstart="raqueteA.down=true" ontouchend="raqueteA.down=false">⬇️</button>
+    </div>
+    <div class="coluna" id="botoesB">
+      <button class="botao" ontouchstart="raqueteB.up=true" ontouchend="raqueteB.up=false">⬆️</button>
+      <button class="botao" ontouchstart="raqueteB.down=true" ontouchend="raqueteB.down=false">⬇️</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+    const seletorModo = document.getElementById("modo");
+    const botoesB = document.getElementById("botoesB");
+
+    let modo = seletorModo.value;
+
+    const raqueteA = { x: 10, y: 160, width: 10, height: 80, cor: "white", up: false, down: false };
+    const raqueteB = { x: 580, y: 160, width: 10, height: 80, cor: "white", up: false, down: false };
+    const bola = { x: 300, y: 200, raio: 7, dx: 4, dy: 4, cor: "#00bcd4" };
+
+    let placarA = 0;
+    let placarB = 0;
+
+    seletorModo.addEventListener("change", () => {
+      modo = seletorModo.value;
+      reiniciar();
+      // Se for contra IA, esconde os botões da raquete B
+      botoesB.style.display = modo === "2jogadores" ? "flex" : "none";
+    });
+
+    function desenharRet(x, y, w, h, cor) {
+      ctx.fillStyle = cor;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function desenharCirculo(x, y, r, cor) {
+      ctx.fillStyle = cor;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function desenharPlacar() {
+      ctx.fillStyle = "white";
+      ctx.font = "18px Arial";
+      ctx.fillText(`Placar - A: ${placarA} | B: ${placarB}`, 210, 25);
+    }
+
+    function moverRaquetes() {
+      if (raqueteA.up) raqueteA.y -= 5;
+      if (raqueteA.down) raqueteA.y += 5;
+      if (modo === "2jogadores") {
+        if (raqueteB.up) raqueteB.y -= 5;
+        if (raqueteB.down) raqueteB.y += 5;
+      } else {
+        moverIA();
+      }
+
+      raqueteA.y = Math.max(0, Math.min(raqueteA.y, canvas.height - raqueteA.height));
+      raqueteB.y = Math.max(0, Math.min(raqueteB.y, canvas.height - raqueteB.height));
+    }
+
+    function moverIA() {
+      let erro = modo === "iaFacil" ? 0.4 : modo === "iaMedio" ? 0.2 : 0;
+
+      let alvo = bola.y - raqueteB.height / 2 + Math.random() * 50 * erro;
+      if (raqueteB.y + raqueteB.height / 2 < alvo) raqueteB.y += 4;
+      else if (raqueteB.y + raqueteB.height / 2 > alvo) raqueteB.y -= 4;
+    }
+
+    function colisao(b, r) {
+      return (
+        b.x - b.raio < r.x + r.width &&
+        b.x + b.raio > r.x &&
+        b.y - b.raio < r.y + r.height &&
+        b.y + b.raio > r.y
+      );
+    }
+
+    function reiniciar() {
+      bola.x = 300;
+      bola.y = 200;
+      bola.dx *= -1;
+      bola.dy = 4 * (Math.random() > 0.5 ? 1 : -1);
+    }
+
+    function atualizar() {
+      moverRaquetes();
+
+      bola.x += bola.dx;
+      bola.y += bola.dy;
+
+      if (bola.y - bola.raio < 0 || bola.y + bola.raio > canvas.height) bola.dy *= -1;
+
+      if (bola.x - bola.raio < 0) {
+        placarB++;
+        reiniciar();
+      }
+
+      if (bola.x + bola.raio > canvas.width) {
+        placarA++;
+        reiniciar();
+      }
+
+      if (colisao(bola, raqueteA)) {
+        bola.dx *= -1;
+        bola.x = raqueteA.x + raqueteA.width + bola.raio;
+      }
+
+      if (colisao(bola, raqueteB)) {
+        bola.dx *= -1;
+        bola.x = raqueteB.x - bola.raio;
+      }
+    }
+
+    function desenhar() {
+      desenharRet(0, 0, canvas.width, canvas.height, "#000");
+      desenharRet(raqueteA.x, raqueteA.y, raqueteA.width, raqueteA.height, raqueteA.cor);
+      desenharRet(raqueteB.x, raqueteB.y, raqueteB.width, raqueteB.height, raqueteB.cor);
+      desenharCirculo(bola.x, bola.y, bola.raio, bola.cor);
+      desenharPlacar();
+    }
+
+    function loop() {
+      atualizar();
+      desenhar();
+      requestAnimationFrame(loop);
+    }
+
+    reiniciar();
+    loop();
+  </script>
+</body>
+</html>
