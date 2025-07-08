@@ -1,152 +1,149 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jogo da Memória</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h1 {
-      color: #4caf50;
-    }
-    #tabuleiro {
-      display: grid;
-      grid-template-columns: repeat(4, 80px);
-      grid-gap: 10px;
-      margin-top: 20px;
-    }
-    .carta {
-      width: 80px;
-      height: 80px;
-      background: #444;
-      border-radius: 8px;
-      font-size: 36px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      color: #222;
-      user-select: none;
-      transition: 0.3s;
-    }
-    .virada, .encontrada {
-      background: #4caf50;
-      color: #fff;
-    }
-    #tentativas, #pontos {
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #4caf50;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a045;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Memória</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #222;
+    color: #eee;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 15px;
+  }
+  #tabuleiro {
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 90px);
+    grid-gap: 10px;
+    justify-content: center;
+  }
+  .carta {
+    width: 90px;
+    height: 90px;
+    background: #444;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 50px;
+    color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  .carta.certa {
+    background: #4caf50;
+    cursor: default;
+  }
+  .carta.revelada {
+    background: #2196f3;
+  }
+  #placar {
+    margin-top: 20px;
+    font-size: 22px;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    background-color: #0b79d0;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #095a9d;
+  }
+</style>
 </head>
 <body>
 
 <h1>Jogo da Memória</h1>
+
 <div id="tabuleiro"></div>
-<div id="tentativas">Tentativas: 0</div>
-<div id="pontos">Pontos: 0</div>
-<button onclick="reiniciar()">Reiniciar</button>
+
+<div id="placar">Pontos: 0</div>
+
+<button onclick="reiniciar()">Reiniciar Jogo</button>
 
 <script>
-  const simbolos = ['🍎','🍌','🍇','🍓','🥝','🍍'];
-  let cartas = [];
-  let viradas = [];
-  let tentativas = 0;
-  let pontos = 0;
+const emojis = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
+let cartas = [...emojis, ...emojis];
+let primeiraCarta = null;
+let segundaCarta = null;
+let travado = false;
+let pontos = 0;
 
-  function embaralharCartas() {
-    cartas = [...simbolos, ...simbolos]
-      .sort(() => Math.random() - 0.5)
-      .map((simbolo, index) => ({
-        id: index,
-        simbolo,
-        encontrada: false
-      }));
+const tabuleiro = document.getElementById('tabuleiro');
+const placar = document.getElementById('placar');
+
+function embaralhar(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
+}
 
-  function criarTabuleiro() {
-    const tabuleiro = document.getElementById('tabuleiro');
-    tabuleiro.innerHTML = '';
-    cartas.forEach((carta, index) => {
-      const div = document.createElement('div');
-      div.classList.add('carta');
-      div.dataset.index = index;
-      div.addEventListener('click', () => virarCarta(index));
-      tabuleiro.appendChild(div);
-    });
-  }
+function criarTabuleiro() {
+  tabuleiro.innerHTML = '';
+  embaralhar(cartas);
+  cartas.forEach((emoji, i) => {
+    const carta = document.createElement('div');
+    carta.classList.add('carta');
+    carta.dataset.valor = emoji;
+    carta.addEventListener('click', () => virarCarta(carta));
+    tabuleiro.appendChild(carta);
+  });
+  pontos = 0;
+  atualizarPlacar();
+}
 
-  function virarCarta(index) {
-    if (viradas.length === 2 || cartas[index].encontrada || viradas.includes(index)) return;
+function virarCarta(carta) {
+  if(travado || carta.classList.contains('revelada') || carta.classList.contains('certa')) return;
 
-    viradas.push(index);
-    atualizarTabuleiro();
+  carta.classList.add('revelada');
+  carta.textContent = carta.dataset.valor;
 
-    if (viradas.length === 2) {
-      tentativas++;
-      document.getElementById('tentativas').textContent = `Tentativas: ${tentativas}`;
-      const [i1, i2] = viradas;
-      if (cartas[i1].simbolo === cartas[i2].simbolo) {
-        cartas[i1].encontrada = true;
-        cartas[i2].encontrada = true;
+  if (!primeiraCarta) {
+    primeiraCarta = carta;
+  } else {
+    segundaCarta = carta;
+    travado = true;
+    setTimeout(() => {
+      if(primeiraCarta.dataset.valor === segundaCarta.dataset.valor) {
+        primeiraCarta.classList.add('certa');
+        segundaCarta.classList.add('certa');
         pontos++;
-        document.getElementById('pontos').textContent = `Pontos: ${pontos}`;
-        viradas = [];
+        atualizarPlacar();
       } else {
-        setTimeout(() => {
-          viradas = [];
-          atualizarTabuleiro();
-        }, 1000);
+        primeiraCarta.classList.remove('revelada');
+        primeiraCarta.textContent = '';
+        segundaCarta.classList.remove('revelada');
+        segundaCarta.textContent = '';
       }
-    }
+      primeiraCarta = null;
+      segundaCarta = null;
+      travado = false;
+    }, 1000);
   }
+}
 
-  function atualizarTabuleiro() {
-    document.querySelectorAll('.carta').forEach((div, i) => {
-      const carta = cartas[i];
-      if (carta.encontrada || viradas.includes(i)) {
-        div.textContent = carta.simbolo;
-        div.classList.add(carta.encontrada ? 'encontrada' : 'virada');
-      } else {
-        div.textContent = '';
-        div.classList.remove('virada', 'encontrada');
-      }
-    });
-  }
+function atualizarPlacar() {
+  placar.textContent = `Pontos: ${pontos}`;
+}
 
-  function reiniciar() {
-    tentativas = 0;
-    pontos = 0;
-    viradas = [];
-    document.getElementById('tentativas').textContent = 'Tentativas: 0';
-    document.getElementById('pontos').textContent = 'Pontos: 0';
-    embaralharCartas();
-    criarTabuleiro();
-    atualizarTabuleiro();
-  }
+function reiniciar() {
+  criarTabuleiro();
+}
 
-  reiniciar();
+criarTabuleiro();
 </script>
 
 </body>
