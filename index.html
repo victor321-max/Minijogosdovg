@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mini Jogos do Victor</title>
 
-<!-- Importando fonte estilo grafite -->
+<!-- Fonte grafite -->
 <link href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap" rel="stylesheet" />
 
 <style>
@@ -17,7 +17,7 @@
     color: #222;
   }
   header {
-    background: #222;
+    background: #0d47a1; /* azul escuro */
     padding: 40px 10px;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.7);
@@ -25,33 +25,36 @@
   header h1 {
     font-family: 'Fredericka the Great', cursive;
     font-size: 60px;
-    color: #ff4081;
+    color: #64b5f6; /* azul claro */
     text-shadow:
-       2px 2px 0 #000,
-       4px 4px 10px rgba(255, 64, 129, 0.7);
+       2px 2px 0 #0d47a1,
+       4px 4px 10px rgba(100, 181, 246, 0.7);
     margin: 0;
     letter-spacing: 3px;
     user-select: none;
   }
   nav {
     margin: 20px auto 40px;
-    max-width: 700px;
+    max-width: 400px;
     display: flex;
-    justify-content: center;
-    gap: 18px;
+    flex-direction: column; /* vertical */
+    align-items: center;
+    gap: 15px;
   }
   nav a {
-    text-decoration: none;
-    background: #ff4081;
-    padding: 12px 26px;
+    width: 80%;
+    text-align: center;
+    padding: 12px 0;
     border-radius: 12px;
+    background: #2196f3; /* azul */
     color: white;
     font-weight: 700;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-decoration: none;
     transition: background 0.3s ease;
   }
   nav a:hover {
-    background: #e040fb;
+    background: #1769aa;
   }
 </style>
 
