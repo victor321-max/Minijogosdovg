@@ -3,76 +3,53 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mini Jogos do Victor</title>
-
-<!-- Fonte grafite -->
-<link href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap" rel="stylesheet" />
-
+<title>Mini Jogos do Victor - Menu</title>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f0f5;
-    margin: 0;
-    padding: 0;
-    color: #222;
-  }
-  header {
-    background: #0d47a1; /* azul escuro */
-    padding: 40px 10px;
+    background: #2575fc;
+    color: white;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+    padding: 40px 20px;
   }
-  header h1 {
-    font-family: 'Fredericka the Great', cursive;
-    font-size: 60px;
-    color: #64b5f6; /* azul claro */
-    text-shadow:
-       2px 2px 0 #0d47a1,
-       4px 4px 10px rgba(100, 181, 246, 0.7);
-    margin: 0;
-    letter-spacing: 3px;
-    user-select: none;
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 5px #0008;
   }
   nav {
-    margin: 20px auto 40px;
-    max-width: 400px;
     display: flex;
-    flex-direction: column; /* vertical */
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 350px;
+    margin: 0 auto;
   }
-  nav a {
-    width: 80%;
-    text-align: center;
-    padding: 12px 0;
-    border-radius: 12px;
-    background: #2196f3; /* azul */
+  a {
+    background: #6a11cb;
     color: white;
-    font-weight: 700;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-decoration: none;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 8px #0005;
     transition: background 0.3s ease;
   }
-  nav a:hover {
-    background: #1769aa;
+  a:hover {
+    background: #8e24f0;
   }
 </style>
-
 </head>
 <body>
 
-<header>
-  <h1>Mini Jogos do Victor</h1>
-</header>
+<h1>Mini Jogos do Victor</h1>
 
 <nav>
-  <a href="velha.html">Jogo da Velha</a>
-  <a href="memoria.html">Jogo da Memória</a>
-  <a href="corrida.html">Corrida de Carros</a>
-  <a href="pingpong.html">Ping Pong</a>
+  <a href="velha.html" target="_blank">Jogo da Velha</a>
+  <a href="memoria.html" target="_blank">Jogo da Memória</a>
+  <a href="forca.html" target="_blank">Jogo da Forca</a>
+  <a href="pingpong.html" target="_blank">Ping Pong</a>
 </nav>
-
-<!-- Conteúdo dos jogos -->
 
 </body>
 </html>
