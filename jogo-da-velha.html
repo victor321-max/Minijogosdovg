@@ -3,73 +3,122 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jogo da Velha</title>
+<title>Jogo da Velha Bonito</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: #eee;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    font-family: 'Poppins', sans-serif;
+    color: #f0f0f0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    min-height: 100vh;
+    margin: 0;
+    padding: 30px 20px;
   }
+
   h1 {
-    margin-bottom: 15px;
-    color: #4caf50;
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
   }
+
   #modoJogo {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.15);
+    padding: 15px 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
   }
-  select, button {
-    padding: 10px;
-    font-size: 16px;
-    margin: 0 5px 15px 5px;
-    border-radius: 5px;
+
+  label {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  select {
+    font-size: 1rem;
+    padding: 8px 15px;
+    border-radius: 8px;
     border: none;
-  }
-  button {
     cursor: pointer;
-    background: #4caf50;
+    background: #fff;
+    color: #333;
+    transition: background-color 0.3s ease;
+  }
+  select:hover {
+    background-color: #e3e3e3;
+  }
+
+  button {
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    background: #ff4b2b;
     color: white;
-    transition: background-color 0.3s;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,75,43,0.6);
+    transition: background-color 0.3s ease;
   }
   button:hover {
-    background: #45a045;
+    background: #e03e1f;
   }
+
   #tabuleiro {
     display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-gap: 10px;
-    margin-bottom: 15px;
+    grid-template-columns: repeat(3, 110px);
+    grid-template-rows: repeat(3, 110px);
+    gap: 15px;
+    background: rgba(255,255,255,0.15);
+    padding: 25px;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
   }
+
   .casa {
-    width: 100px;
-    height: 100px;
-    background: #222;
-    border-radius: 12px;
+    background: linear-gradient(145deg, #4c9aff, #0076ff);
+    border-radius: 18px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 64px;
-    color: #4caf50;
+    font-size: 70px;
+    color: white;
     cursor: pointer;
+    box-shadow: 4px 4px 15px #0059c2, -4px -4px 15px #0091ff;
+    transition: transform 0.15s ease, background 0.3s ease;
     user-select: none;
-    box-shadow: 0 0 5px #000;
-    transition: background-color 0.3s, color 0.3s;
   }
   .casa:hover {
-    background-color: #333;
+    background: linear-gradient(145deg, #0066ff, #3399ff);
+    transform: scale(1.05);
   }
+  .casa.fixo {
+    cursor: default;
+    background: linear-gradient(145deg, #0b4ea7, #0d5ab6);
+    box-shadow: inset 4px 4px 15px #0059c2, inset -4px -4px 15px #0091ff;
+  }
+
   #mensagem {
-    font-size: 20px;
-    min-height: 28px;
-    margin-bottom: 10px;
-    min-width: 320px;
-    text-align: center;
+    margin-top: 25px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    min-height: 40px;
   }
+
   #placar {
-    font-size: 18px;
+    margin-top: 10px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ffeb3b;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
   }
 </style>
 </head>
@@ -78,14 +127,14 @@
 <h1>Jogo da Velha</h1>
 
 <div id="modoJogo">
-  <label for="seletorModo">Modo de Jogo: </label>
+  <label for="seletorModo">Modo de Jogo:</label>
   <select id="seletorModo">
     <option value="2jogadores">2 Jogadores</option>
     <option value="iaFacil">IA Fácil</option>
     <option value="iaMedio">IA Médio</option>
     <option value="iaDificil">IA Difícil</option>
   </select>
-  <button id="btnReiniciar">Reiniciar</button>
+  <button onclick="reiniciarJogo()">Reiniciar</button>
 </div>
 
 <div id="tabuleiro"></div>
@@ -94,209 +143,222 @@
 <div id="placar">Jogador X: 0 | Jogador O: 0</div>
 
 <script>
-  const tabuleiro = document.getElementById('tabuleiro');
-  const mensagem = document.getElementById('mensagem');
-  const placarDiv = document.getElementById('placar');
-  const seletorModo = document.getElementById('seletorModo');
-  const btnReiniciar = document.getElementById('btnReiniciar');
+const tabuleiro = document.getElementById('tabuleiro');
+const mensagem = document.getElementById('mensagem');
+const placarDiv = document.getElementById('placar');
+const seletorModo = document.getElementById('seletorModo');
 
-  let turno = 'X';
-  let tab = Array(9).fill('');
-  let jogoAtivo = true;
-  let placar = { X: 0, O: 0 };
+let turno = 'X';
+let tab = Array(9).fill('');
+let jogoAtivo = true;
+let placar = { X: 0, O: 0 };
 
-  function criarTabuleiro() {
-    tabuleiro.innerHTML = '';
-    for (let i = 0; i < 9; i++) {
-      const casa = document.createElement('div');
-      casa.classList.add('casa');
-      casa.dataset.index = i;
-      casa.addEventListener('click', () => jogar(i));
-      tabuleiro.appendChild(casa);
-    }
-    mensagem.textContent = `Turno do jogador ${turno}`;
+function criarTabuleiro() {
+  tabuleiro.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const casa = document.createElement('div');
+    casa.classList.add('casa');
+    casa.dataset.index = i;
+    casa.addEventListener('click', () => jogar(i));
+    tabuleiro.appendChild(casa);
+  }
+  mensagem.textContent = `Turno do jogador ${turno}`;
+}
+
+function jogar(i) {
+  if (!jogoAtivo || tab[i] !== '') return;
+
+  tab[i] = turno;
+  atualizarTabuleiro();
+
+  if (verificarVitoria(turno)) {
+    placar[turno]++;
+    placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+    mensagem.textContent = `Jogador ${turno} venceu! 🎉`;
+    jogoAtivo = false;
+    marcarCasasFixas();
+    return;
   }
 
-  function jogar(i) {
-    if (!jogoAtivo || tab[i] !== '') return;
+  if (!tab.includes('')) {
+    mensagem.textContent = 'Empate! 🤝';
+    jogoAtivo = false;
+    marcarCasasFixas();
+    return;
+  }
 
-    tab[i] = turno;
+  trocarTurno();
+
+  if (seletorModo.value !== '2jogadores' && turno === 'O' && jogoAtivo) {
+    setTimeout(jogadaIA, 600);
+  }
+}
+
+function atualizarTabuleiro() {
+  const casas = document.querySelectorAll('.casa');
+  casas.forEach((casa, i) => {
+    casa.textContent = tab[i];
+  });
+}
+
+function trocarTurno() {
+  turno = turno === 'X' ? 'O' : 'X';
+  mensagem.textContent = `Turno do jogador ${turno}`;
+}
+
+function verificarVitoria(jogador) {
+  const vitorias = [
+    [0,1,2],[3,4,5],[6,7,8], // linhas
+    [0,3,6],[1,4,7],[2,5,8], // colunas
+    [0,4,8],[2,4,6]          // diagonais
+  ];
+  return vitorias.some(comb => comb.every(i => tab[i] === jogador));
+}
+
+function jogadaIA() {
+  const nivel = seletorModo.value;
+  let jogada;
+
+  if (nivel === 'iaFacil') {
+    jogada = jogadaRandomica();
+  } else if (nivel === 'iaMedio') {
+    jogada = jogadaMedio();
+  } else if (nivel === 'iaDificil') {
+    jogada = jogadaMinimax(tab.slice(), 'O').index;
+  }
+
+  if (jogada !== undefined) {
+    tab[jogada] = 'O';
     atualizarTabuleiro();
 
-    if (verificarVitoria(turno)) {
-      placar[turno]++;
+    if (verificarVitoria('O')) {
+      placar['O']++;
       placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
-      mensagem.textContent = `Jogador ${turno} venceu!`;
+      mensagem.textContent = 'Jogador O (IA) venceu! 🎉';
       jogoAtivo = false;
+      marcarCasasFixas();
       return;
     }
 
     if (!tab.includes('')) {
-      mensagem.textContent = 'Empate!';
+      mensagem.textContent = 'Empate! 🤝';
       jogoAtivo = false;
+      marcarCasasFixas();
       return;
     }
 
     trocarTurno();
-
-    if (seletorModo.value !== '2jogadores' && turno === 'O' && jogoAtivo) {
-      setTimeout(jogadaIA, 400);
-    }
   }
+}
 
-  function atualizarTabuleiro() {
-    const casas = document.querySelectorAll('.casa');
-    casas.forEach((casa, i) => {
-      casa.textContent = tab[i];
-    });
-  }
+function jogadaRandomica() {
+  const vazias = tab.map((v,i) => v === '' ? i : null).filter(v => v !== null);
+  if (vazias.length === 0) return undefined;
+  return vazias[Math.floor(Math.random() * vazias.length)];
+}
 
-  function trocarTurno() {
-    turno = turno === 'X' ? 'O' : 'X';
-    mensagem.textContent = `Turno do jogador ${turno}`;
-  }
-
-  function verificarVitoria(jogador) {
-    const vitorias = [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
-    ];
-    return vitorias.some(comb => comb.every(i => tab[i] === jogador));
-  }
-
-  function jogadaIA() {
-    const nivel = seletorModo.value;
-    let jogada;
-
-    if (nivel === 'iaFacil') {
-      jogada = jogadaRandomica();
-    } else if (nivel === 'iaMedio') {
-      jogada = jogadaMedio();
-    } else if (nivel === 'iaDificil') {
-      jogada = jogadaMinimax(tab.slice(), 'O').index;
-    }
-
-    if (jogada !== undefined) {
-      tab[jogada] = 'O';
-      atualizarTabuleiro();
-
+function jogadaMedio() {
+  for (let i = 0; i < 9; i++) {
+    if (tab[i] === '') {
+      tab[i] = 'O';
       if (verificarVitoria('O')) {
-        placar['O']++;
-        placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
-        mensagem.textContent = 'Jogador O (IA) venceu!';
-        jogoAtivo = false;
-        return;
-      }
-
-      if (!tab.includes('')) {
-        mensagem.textContent = 'Empate!';
-        jogoAtivo = false;
-        return;
-      }
-
-      trocarTurno();
-    }
-  }
-
-  function jogadaRandomica() {
-    const vazias = tab.map((v,i) => v === '' ? i : null).filter(v => v !== null);
-    if (vazias.length === 0) return undefined;
-    return vazias[Math.floor(Math.random() * vazias.length)];
-  }
-
-  function jogadaMedio() {
-    for (let i = 0; i < 9; i++) {
-      if (tab[i] === '') {
-        tab[i] = 'O';
-        if (verificarVitoria('O')) {
-          tab[i] = '';
-          return i;
-        }
         tab[i] = '';
+        return i;
       }
+      tab[i] = '';
     }
-    for (let i = 0; i < 9; i++) {
-      if (tab[i] === '') {
-        tab[i] = 'X';
-        if (verificarVitoria('X')) {
-          tab[i] = '';
-          return i;
-        }
+  }
+  for (let i = 0; i < 9; i++) {
+    if (tab[i] === '') {
+      tab[i] = 'X';
+      if (verificarVitoria('X')) {
         tab[i] = '';
+        return i;
+      }
+      tab[i] = '';
+    }
+  }
+  return jogadaRandomica();
+}
+
+function jogadaMinimax(nTab, jogador) {
+  const oposto = jogador === 'O' ? 'X' : 'O';
+
+  if (verificarVitoriaNoTab(nTab, 'X')) return {score: -10};
+  if (verificarVitoriaNoTab(nTab, 'O')) return {score: 10};
+  if (!nTab.includes('')) return {score: 0};
+
+  let moves = [];
+
+  for (let i = 0; i < 9; i++) {
+    if (nTab[i] === '') {
+      let move = {};
+      move.index = i;
+      nTab[i] = jogador;
+
+      let result = jogadaMinimax(nTab, oposto);
+      move.score = result.score;
+
+      nTab[i] = '';
+      moves.push(move);
+    }
+  }
+
+  let melhorMove;
+  if (jogador === 'O') {
+    let melhorScore = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > melhorScore) {
+        melhorScore = moves[i].score;
+        melhorMove = moves[i];
       }
     }
-    return jogadaRandomica();
-  }
-
-  function jogadaMinimax(nTab, jogador) {
-    const oposto = jogador === 'O' ? 'X' : 'O';
-
-    if (verificarVitoriaMinimax(nTab, 'X')) return {score: -10};
-    if (verificarVitoriaMinimax(nTab, 'O')) return {score: 10};
-    if (!nTab.includes('')) return {score: 0};
-
-    let moves = [];
-
-    for (let i = 0; i < 9; i++) {
-      if (nTab[i] === '') {
-        let move = {};
-        move.index = i;
-        nTab[i] = jogador;
-
-        let result = jogadaMinimax(nTab, oposto);
-        move.score = result.score;
-
-        nTab[i] = '';
-        moves.push(move);
+  } else {
+    let melhorScore = Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < melhorScore) {
+        melhorScore = moves[i].score;
+        melhorMove = moves[i];
       }
     }
-
-    let melhorMove;
-    if (jogador === 'O') {
-      let melhorScore = -Infinity;
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].score > melhorScore) {
-          melhorScore = moves[i].score;
-          melhorMove = moves[i];
-        }
-      }
-    } else {
-      let melhorScore = Infinity;
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].score < melhorScore) {
-          melhorScore = moves[i].score;
-          melhorMove = moves[i];
-        }
-      }
-    }
-
-    return melhorMove;
   }
 
-  function verificarVitoriaMinimax(board, jogador) {
-    const vitorias = [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
-    ];
-    return vitorias.some(comb => comb.every(i => board[i] === jogador));
-  }
+  return melhorMove;
+}
 
-  function reiniciarJogo() {
-    tab = Array(9).fill('');
-    turno = 'X';
-    jogoAtivo = true;
-    mensagem.textContent = `Turno do jogador ${turno}`;
-    placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
-    criarTabuleiro();
-  }
+function verificarVitoriaNoTab(tTab, jogador) {
+  const vitorias = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  return vitorias.some(comb => comb.every(i => tTab[i] === jogador));
+}
 
-  btnReiniciar.addEventListener('click', reiniciarJogo);
-  seletorModo.addEventListener('change', reiniciarJogo);
-
+function reiniciarJogo() {
+  tab = Array(9).fill('');
+  turno = 'X';
+  jogoAtivo = true;
+  mensagem.textContent = `Turno do jogador ${turno}`;
+  placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
   criarTabuleiro();
+}
+
+function marcarCasasFixas() {
+  const casas = document.querySelectorAll('.casa');
+  casas.forEach((casa, i) => {
+    if(tab[i] !== '') {
+      casa.classList.add('fixo');
+    } else {
+      casa.classList.remove('fixo');
+    }
+  });
+}
+
+seletorModo.addEventListener('change', reiniciarJogo);
+
+criarTabuleiro();
 </script>
 
 </body>
-  </html>
+</html>
