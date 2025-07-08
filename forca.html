@@ -3,160 +3,414 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jogo da Forca</title>
+<title>Jogo da Forca - Mini Jogos do Victor</title>
 <style>
   body {
-    font-family: sans-serif;
-    text-align: center;
-    background: #f7f7f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: #fff;
+    margin: 0;
     padding: 20px;
+    text-align: center;
+    user-select: none;
   }
   h1 {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 2.8rem;
+    text-shadow: 2px 2px 5px #0008;
+    font-weight: 900;
   }
+  #forca-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: rgba(0,0,0,0.3);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 15px #0009;
+  }
+  #boneco {
+    margin: 0 auto 20px;
+    width: 200px;
+    height: 250px;
+    position: relative;
+  }
+  /* Forca: base e estrutura */
+  #forca-base {
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    width: 160px;
+    height: 15px;
+    background: #fff;
+    border-radius: 5px;
+  }
+  #forca-pilar {
+    position: absolute;
+    bottom: 15px;
+    left: 40px;
+    width: 15px;
+    height: 200px;
+    background: #fff;
+    border-radius: 5px;
+  }
+  #forca-barra {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 100px;
+    height: 15px;
+    background: #fff;
+    border-radius: 5px 5px 0 0;
+  }
+  #forca-corda {
+    position: absolute;
+    top: 15px;
+    left: 135px;
+    width: 4px;
+    height: 35px;
+    background: #fff;
+    border-radius: 2px;
+  }
+  /* Partes do boneco */
+  .parte {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    display: none;
+  }
+  #cabeca {
+    width: 50px;
+    height: 50px;
+    top: 50px;
+    left: 110px;
+    border-radius: 50%;
+    display: none;
+  }
+  #tronco {
+    width: 15px;
+    height: 80px;
+    top: 100px;
+    left: 132px;
+    border-radius: 0;
+    display: none;
+  }
+  #braco-esq {
+    width: 15px;
+    height: 60px;
+    top: 100px;
+    left: 90px;
+    transform: rotate(-40deg);
+    transform-origin: top right;
+    border-radius: 0;
+    display: none;
+  }
+  #braco-dir {
+    width: 15px;
+    height: 60px;
+    top: 100px;
+    left: 155px;
+    transform: rotate(40deg);
+    transform-origin: top left;
+    border-radius: 0;
+    display: none;
+  }
+  #perna-esq {
+    width: 15px;
+    height: 60px;
+    top: 180px;
+    left: 95px;
+    transform: rotate(40deg);
+    transform-origin: top right;
+    border-radius: 0;
+    display: none;
+  }
+  #perna-dir {
+    width: 15px;
+    height: 60px;
+    top: 180px;
+    left: 140px;
+    transform: rotate(-40deg);
+    transform-origin: top left;
+    border-radius: 0;
+    display: none;
+  }
+
   #palavra {
-    font-size: 32px;
-    letter-spacing: 10px;
+    font-size: 2.2rem;
+    letter-spacing: 12px;
     margin: 20px 0;
+    font-weight: 700;
+    user-select: none;
   }
-  #letras {
-    margin: 20px 0;
+  #letras-usadas {
+    margin-top: 10px;
+    font-size: 1.2rem;
   }
-  button.letra {
-    padding: 10px 15px;
-    margin: 5px;
-    font-size: 18px;
+  #input-letra {
+    font-size: 1.5rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    width: 60px;
+    text-align: center;
+    font-weight: 700;
+  }
+  button {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 1.3rem;
+    font-weight: 700;
     cursor: pointer;
-    width: 40px;
+    margin-left: 10px;
+    transition: background 0.3s;
+    color: #2575fc;
   }
-  #tentativas {
-    font-size: 18px;
-    margin: 10px 0;
+  button:hover {
+    background: #cfdfff;
   }
   #mensagem {
-    font-size: 20px;
-    margin-top: 20px;
-    color: green;
+    margin-top: 15px;
+    font-size: 1.3rem;
+    min-height: 40px;
+    font-weight: 700;
   }
-  #reiniciar {
-    padding: 10px 20px;
-    font-size: 18px;
-    cursor: pointer;
-    margin-top: 20px;
-    display: none;
+  #placar {
+    margin-top: 25px;
+    font-size: 1.4rem;
+  }
+  @media(max-width: 500px) {
+    #palavra {
+      letter-spacing: 6px;
+      font-size: 1.6rem;
+    }
+    #boneco {
+      width: 150px;
+      height: 190px;
+    }
+    #forca-base {
+      width: 120px;
+      height: 12px;
+      left: 15px;
+    }
+    #forca-pilar {
+      height: 150px;
+      left: 30px;
+    }
+    #forca-barra {
+      width: 75px;
+      height: 12px;
+      left: 30px;
+    }
+    #forca-corda {
+      height: 25px;
+      left: 105px;
+      width: 3px;
+    }
+    #cabeca {
+      width: 40px;
+      height: 40px;
+      top: 40px;
+      left: 90px;
+    }
+    #tronco {
+      height: 65px;
+      top: 80px;
+      left: 110px;
+      width: 12px;
+    }
+    #braco-esq, #braco-dir, #perna-esq, #perna-dir {
+      width: 12px;
+      height: 50px;
+    }
+    #braco-esq {
+      top: 80px;
+      left: 72px;
+    }
+    #braco-dir {
+      top: 80px;
+      left: 130px;
+    }
+    #perna-esq {
+      top: 145px;
+      left: 73px;
+    }
+    #perna-dir {
+      top: 145px;
+      left: 120px;
+    }
   }
 </style>
 </head>
 <body>
-  <h1>Jogo da Forca</h1>
+
+<h1>Jogo da Forca</h1>
+
+<div id="forca-container">
+
+  <div id="boneco">
+    <div id="forca-base"></div>
+    <div id="forca-pilar"></div>
+    <div id="forca-barra"></div>
+    <div id="forca-corda"></div>
+    <div class="parte" id="cabeca"></div>
+    <div class="parte" id="tronco"></div>
+    <div class="parte" id="braco-esq"></div>
+    <div class="parte" id="braco-dir"></div>
+    <div class="parte" id="perna-esq"></div>
+    <div class="parte" id="perna-dir"></div>
+  </div>
 
   <div id="palavra"></div>
-  <div id="letras"></div>
-  <div id="tentativas"></div>
+
+  <div>
+    <input type="text" id="input-letra" maxlength="1" placeholder="Letra" autocomplete="off" />
+    <button id="btn-chutar">Chutar</button>
+    <button id="btn-novo">Novo Jogo</button>
+  </div>
+
+  <div id="letras-usadas">Letras usadas: <span id="usadas"></span></div>
   <div id="mensagem"></div>
-  <button id="reiniciar" onclick="reiniciarJogo()">Reiniciar</button>
+  <div id="placar">Vitórias: 0 | Derrotas: 0</div>
+</div>
 
 <script>
-const palavras = ["CAPOEIRA", "BRASIL", "JOGADOR", "VITOR", "AMIZADE", "COMPUTADOR", "PROGRAMACAO", "FUTEBOL", "MUSICA"];
-let palavraSecreta = "";
-let letrasCertas = [];
-let letrasErradas = [];
-let tentativasRestantes = 6;
+  const palavras = [
+    "javascript", "programacao", "computador", "internet", "algoritmo", "python",
+    "java", "html", "css", "react", "angular", "vue", "node", "express", "linux",
+    "windows", "apple", "google", "facebook", "twitter", "github", "firebase",
+    "mongodb", "sql", "docker", "kubernetes", "api", "json", "xml", "firebase",
+    "software", "hardware", "teclado", "mouse", "monitor", "processador", "memoria",
+    "armazenamento", "dados", "rede", "senha", "login", "usuario", "tecnologia",
+    "programador", "debug", "compilador", "variavel", "função", "classe", "objeto",
+    "interface", "metodo", "loop", "condicional", "array", "string", "numero",
+    "booleano", "constante", "evento", "callback", "assincrono", "promessa",
+    "prototipo", "heranca", "polimorfismo", "encapsulamento", "desenvolvimento",
+    "design", "teste", "documentacao", "deploy", "versao", "controle", "branch",
+    "merge", "commit", "push", "pull", "fork", "clone", "issue", "bug", "fix",
+    "release", "script", "framework", "biblioteca", "modulo", "pack", "build"
+  ];
 
-const palavraDiv = document.getElementById('palavra');
-const letrasDiv = document.getElementById('letras');
-const tentativasDiv = document.getElementById('tentativas');
-const mensagemDiv = document.getElementById('mensagem');
-const reiniciarBtn = document.getElementById('reiniciar');
+  let palavraAtual = "";
+  let letrasDescobertas = [];
+  let letrasUsadas = [];
+  let erros = 0;
+  let maxErros = 6;
+  let vitorias = 0;
+  let derrotas = 0;
 
-function escolherPalavra() {
-  palavraSecreta = palavras[Math.floor(Math.random() * palavras.length)];
-}
+  const palavraDiv = document.getElementById("palavra");
+  const inputLetra = document.getElementById("input-letra");
+  const btnChutar = document.getElementById("btn-chutar");
+  const btnNovo = document.getElementById("btn-novo");
+  const usadasSpan = document.getElementById("usadas");
+  const mensagemDiv = document.getElementById("mensagem");
+  const placarDiv = document.getElementById("placar");
+  const partes = [
+    document.getElementById("cabeca"),
+    document.getElementById("tronco"),
+    document.getElementById("braco-esq"),
+    document.getElementById("braco-dir"),
+    document.getElementById("perna-esq"),
+    document.getElementById("perna-dir"),
+  ];
 
-function mostrarPalavra() {
-  let display = "";
-  for (let letra of palavraSecreta) {
-    if (letrasCertas.includes(letra)) {
-      display += letra + " ";
-    } else {
-      display += "_ ";
+  function escolherPalavra() {
+    const indice = Math.floor(Math.random() * palavras.length);
+    return palavras[indice].toUpperCase();
+  }
+
+  function mostrarPalavra() {
+    palavraDiv.textContent = letrasDescobertas.map(l => l ? l : "_").join(" ");
+  }
+
+  function atualizarUsadas() {
+    usadasSpan.textContent = letrasUsadas.join(", ");
+  }
+
+  function resetarJogo() {
+    palavraAtual = escolherPalavra();
+    letrasDescobertas = Array(palavraAtual.length).fill(null);
+    letrasUsadas = [];
+    erros = 0;
+    mensagemDiv.textContent = "";
+    inputLetra.value = "";
+    inputLetra.disabled = false;
+    btnChutar.disabled = false;
+    partes.forEach(p => p.style.display = "none");
+    mostrarPalavra();
+    atualizarUsadas();
+    atualizarPlacar();
+  }
+
+  function atualizarPlacar() {
+    placarDiv.textContent = `Vitórias: ${vitorias} | Derrotas: ${derrotas}`;
+  }
+
+  function chutarLetra() {
+    let letra = inputLetra.value.toUpperCase();
+    if (!letra.match(/^[A-ZÀ-Ú]$/)) {
+      mensagemDiv.textContent = "Digite uma letra válida!";
+      inputLetra.value = "";
+      return;
     }
+    if (letrasUsadas.includes(letra)) {
+      mensagemDiv.textContent = "Você já usou essa letra!";
+      inputLetra.value = "";
+      return;
+    }
+    letrasUsadas.push(letra);
+
+    if (palavraAtual.includes(letra)) {
+      for(let i=0; i < palavraAtual.length; i++) {
+        if (palavraAtual[i] === letra) {
+          letrasDescobertas[i] = letra;
+        }
+      }
+      mostrarPalavra();
+      mensagemDiv.textContent = "Acertou!";
+
+      if (!letrasDescobertas.includes(null)) {
+        mensagemDiv.textContent = "Parabéns, você venceu!";
+        vitorias++;
+        inputLetra.disabled = true;
+        btnChutar.disabled = true;
+        atualizarPlacar();
+      }
+    } else {
+      erros++;
+      partes[erros - 1].style.display = "block";
+      mensagemDiv.textContent = `Letra incorreta! Erros: ${erros} de ${maxErros}`;
+      if (erros === maxErros) {
+        mensagemDiv.textContent = `Você perdeu! A palavra era: ${palavraAtual}`;
+        derrotas++;
+        inputLetra.disabled = true;
+        btnChutar.disabled = true;
+        mostrarPalavraCompleta();
+        atualizarPlacar();
+      }
+    }
+    atualizarUsadas();
+    inputLetra.value = "";
+    inputLetra.focus();
   }
-  palavraDiv.textContent = display.trim();
-}
 
-function criarTeclado() {
-  letrasDiv.innerHTML = "";
-  for (let i = 65; i <= 90; i++) {
-    const letra = String.fromCharCode(i);
-    const btn = document.createElement('button');
-    btn.textContent = letra;
-    btn.classList.add('letra');
-    btn.addEventListener('click', () => tentarLetra(letra));
-    letrasDiv.appendChild(btn);
-  }
-}
-
-function tentarLetra(letra) {
-  if (letrasCertas.includes(letra) || letrasErradas.includes(letra)) return;
-
-  if (palavraSecreta.includes(letra)) {
-    letrasCertas.push(letra);
-  } else {
-    letrasErradas.push(letra);
-    tentativasRestantes--;
+  function mostrarPalavraCompleta() {
+    letrasDescobertas = palavraAtual.split("");
+    mostrarPalavra();
   }
 
-  atualizarJogo();
-}
-
-function atualizarJogo() {
-  mostrarPalavra();
-  tentativasDiv.textContent = `Tentativas restantes: ${tentativasRestantes}`;
-  atualizarTeclado();
-
-  if (!palavraDiv.textContent.includes("_")) {
-    mensagemDiv.style.color = "green";
-    mensagemDiv.textContent = "Parabéns! Você ganhou!";
-    reiniciarBtn.style.display = "inline-block";
-    bloquearTeclado();
-  } else if (tentativasRestantes <= 0) {
-    mensagemDiv.style.color = "red";
-    mensagemDiv.textContent = `Você perdeu! A palavra era: ${palavraSecreta}`;
-    reiniciarBtn.style.display = "inline-block";
-    bloquearTeclado();
-  }
-}
-
-function atualizarTeclado() {
-  const botoes = letrasDiv.querySelectorAll('button');
-  botoes.forEach(btn => {
-    if (letrasCertas.includes(btn.textContent) || letrasErradas.includes(btn.textContent)) {
-      btn.disabled = true;
-      btn.style.opacity = 0.5;
+  btnChutar.addEventListener("click", chutarLetra);
+  inputLetra.addEventListener("keyup", e => {
+    if (e.key === "Enter") {
+      chutarLetra();
     }
   });
-}
+  btnNovo.addEventListener("click", resetarJogo);
 
-function bloquearTeclado() {
-  const botoes = letrasDiv.querySelectorAll('button');
-  botoes.forEach(btn => btn.disabled = true);
-}
-
-function reiniciarJogo() {
-  letrasCertas = [];
-  letrasErradas = [];
-  tentativasRestantes = 6;
-  mensagemDiv.textContent = "";
-  reiniciarBtn.style.display = "none";
-  escolherPalavra();
-  mostrarPalavra();
-  criarTeclado();
-  tentativasDiv.textContent = `Tentativas restantes: ${tentativasRestantes}`;
-}
-
-reiniciarJogo();
+  resetarJogo();
 </script>
 
 </body>
-</html>
+  </</html>
