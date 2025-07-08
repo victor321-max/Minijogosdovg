@@ -1,76 +1,75 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mini Jogos do Victor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik+Spray+Paint&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(145deg, #111, #222);
-      color: white;
-      text-align: center;
-      padding: 40px 20px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mini Jogos do Victor</title>
 
-    h1 {
-      font-family: 'Rubik Spray Paint', cursive;
-      font-size: 42px;
-      color: #4caf50;
-      text-shadow: 2px 2px 4px #000, 0 0 20px #0f0;
-      margin-bottom: 40px;
-    }
+<!-- Importando fonte estilo grafite -->
+<link href="https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap" rel="stylesheet" />
 
-    .menu {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      max-width: 300px;
-      margin: 0 auto;
-    }
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f0f5;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+  header {
+    background: #222;
+    padding: 40px 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+  }
+  header h1 {
+    font-family: 'Fredericka the Great', cursive;
+    font-size: 60px;
+    color: #ff4081;
+    text-shadow:
+       2px 2px 0 #000,
+       4px 4px 10px rgba(255, 64, 129, 0.7);
+    margin: 0;
+    letter-spacing: 3px;
+    user-select: none;
+  }
+  nav {
+    margin: 20px auto 40px;
+    max-width: 700px;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+  }
+  nav a {
+    text-decoration: none;
+    background: #ff4081;
+    padding: 12px 26px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background 0.3s ease;
+  }
+  nav a:hover {
+    background: #e040fb;
+  }
+</style>
 
-    a {
-      text-decoration: none;
-      font-size: 20px;
-      background: #00c3ff;
-      color: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      transition: 0.3s;
-      font-weight: bold;
-      box-shadow: 0 0 10px #00c3ff;
-    }
-
-    a:hover {
-      background: #0099cc;
-      box-shadow: 0 0 15px #00e1ff, 0 0 5px #00e1ff inset;
-      transform: scale(1.05);
-    }
-
-    footer {
-      margin-top: 50px;
-      font-size: 14px;
-      color: #888;
-    }
-  </style>
 </head>
 <body>
 
+<header>
   <h1>Mini Jogos do Victor</h1>
+</header>
 
-  <div class="menu">
-    <a href="jogodavelha.html">Jogo da Velha</a>
-    <a href="memoria.html">Jogo da Memória</a>
-    <a href="forca.html">Jogo da Forca</a>
-    <a href="corrida.html">Corrida de Carros</a>
-    <a href="pingpong.html">Ping Pong</a>
-  </div>
+<nav>
+  <a href="velha.html">Jogo da Velha</a>
+  <a href="memoria.html">Jogo da Memória</a>
+  <a href="corrida.html">Corrida de Carros</a>
+  <a href="pingpong.html">Ping Pong</a>
+</nav>
 
-  <footer>
-    &copy; 2025 - Criado por Victor com ajuda do ChatGPT
-  </footer>
+<!-- Conteúdo dos jogos -->
 
 </body>
 </html>
