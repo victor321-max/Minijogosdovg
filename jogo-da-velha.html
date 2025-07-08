@@ -1,49 +1,75 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<title>Jogo da Velha - Modos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Velha</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
-    background: #f0f0f0;
   }
   h1 {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    color: #4caf50;
   }
-  #mode-select {
-    margin-bottom: 20px;
+  #modoJogo {
+    margin-bottom: 15px;
   }
-  table {
-    margin: 0 auto;
-    border-collapse: collapse;
-  }
-  td {
-    width: 80px;
-    height: 80px;
-    border: 2px solid #333;
-    font-size: 48px;
-    cursor: pointer;
-    text-align: center;
-    vertical-align: middle;
-    user-select: none;
-  }
-  td.disabled {
-    cursor: not-allowed;
-    color: #999;
-  }
-  #status {
-    margin-top: 20px;
-    font-size: 20px;
-    font-weight: bold;
+  select, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 0 5px 15px 5px;
+    border-radius: 5px;
+    border: none;
   }
   button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    font-size: 16px;
     cursor: pointer;
+    background: #4caf50;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background: #45a045;
+  }
+  #tabuleiro {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 10px;
+    margin-bottom: 15px;
+  }
+  .casa {
+    width: 100px;
+    height: 100px;
+    background: #222;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 64px;
+    color: #4caf50;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 0 5px #000;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .casa:hover {
+    background-color: #333;
+  }
+  #mensagem {
+    font-size: 20px;
+    min-height: 28px;
+    margin-bottom: 10px;
+    min-width: 320px;
+    text-align: center;
+  }
+  #placar {
+    font-size: 18px;
   }
 </style>
 </head>
@@ -51,207 +77,225 @@
 
 <h1>Jogo da Velha</h1>
 
-<div id="mode-select">
-  <label><input type="radio" name="mode" value="2players" checked> 2 Jogadores</label>
-  <label><input type="radio" name="mode" value="easy"> IA Fácil</label>
-  <label><input type="radio" name="mode" value="medium"> IA Médio</label>
-  <label><input type="radio" name="mode" value="hard"> IA Difícil</label>
+<div id="modoJogo">
+  <label for="seletorModo">Modo de Jogo: </label>
+  <select id="seletorModo">
+    <option value="2jogadores">2 Jogadores</option>
+    <option value="iaFacil">IA Fácil</option>
+    <option value="iaMedio">IA Médio</option>
+    <option value="iaDificil">IA Difícil</option>
+  </select>
+  <button id="btnReiniciar">Reiniciar</button>
 </div>
 
-<table id="board">
-  <tr><td data-index="0"></td><td data-index="1"></td><td data-index="2"></td></tr>
-  <tr><td data-index="3"></td><td data-index="4"></td><td data-index="5"></td></tr>
-  <tr><td data-index="6"></td><td data-index="7"></td><td data-index="8"></td></tr>
-</table>
+<div id="tabuleiro"></div>
 
-<div id="status">Vez do jogador X</div>
-<button id="restart">Reiniciar</button>
+<div id="mensagem"></div>
+<div id="placar">Jogador X: 0 | Jogador O: 0</div>
 
 <script>
-const boardCells = document.querySelectorAll("#board td");
-const status = document.getElementById("status");
-const restartBtn = document.getElementById("restart");
-const modeRadios = document.querySelectorAll('input[name="mode"]');
+  const tabuleiro = document.getElementById('tabuleiro');
+  const mensagem = document.getElementById('mensagem');
+  const placarDiv = document.getElementById('placar');
+  const seletorModo = document.getElementById('seletorModo');
+  const btnReiniciar = document.getElementById('btnReiniciar');
 
-let board = ["", "", "", "", "", "", "", "", ""];
-let currentPlayer = "X";
-let gameActive = true;
-let mode = "2players";
+  let turno = 'X';
+  let tab = Array(9).fill('');
+  let jogoAtivo = true;
+  let placar = { X: 0, O: 0 };
 
-// Combinações vencedoras
-const winningCombos = [
-  [0,1,2],[3,4,5],[6,7,8],
-  [0,3,6],[1,4,7],[2,5,8],
-  [0,4,8],[2,4,6]
-];
+  function criarTabuleiro() {
+    tabuleiro.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const casa = document.createElement('div');
+      casa.classList.add('casa');
+      casa.dataset.index = i;
+      casa.addEventListener('click', () => jogar(i));
+      tabuleiro.appendChild(casa);
+    }
+    mensagem.textContent = `Turno do jogador ${turno}`;
+  }
 
-function checkWin(player) {
-  return winningCombos.some(combo => 
-    combo.every(i => board[i] === player)
-  );
-}
+  function jogar(i) {
+    if (!jogoAtivo || tab[i] !== '') return;
 
-function checkDraw() {
-  return board.every(cell => cell !== "");
-}
+    tab[i] = turno;
+    atualizarTabuleiro();
 
-function updateStatus(text) {
-  status.textContent = text;
-}
+    if (verificarVitoria(turno)) {
+      placar[turno]++;
+      placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+      mensagem.textContent = `Jogador ${turno} venceu!`;
+      jogoAtivo = false;
+      return;
+    }
 
-function makeMove(index, player) {
-  if(board[index] === "" && gameActive) {
-    board[index] = player;
-    boardCells[index].textContent = player;
-    boardCells[index].classList.add("disabled");
-    if(checkWin(player)) {
-      updateStatus(`Jogador ${player} venceu! 🎉`);
-      gameActive = false;
-    } else if(checkDraw()) {
-      updateStatus("Empate!");
-      gameActive = false;
+    if (!tab.includes('')) {
+      mensagem.textContent = 'Empate!';
+      jogoAtivo = false;
+      return;
+    }
+
+    trocarTurno();
+
+    if (seletorModo.value !== '2jogadores' && turno === 'O' && jogoAtivo) {
+      setTimeout(jogadaIA, 400);
+    }
+  }
+
+  function atualizarTabuleiro() {
+    const casas = document.querySelectorAll('.casa');
+    casas.forEach((casa, i) => {
+      casa.textContent = tab[i];
+    });
+  }
+
+  function trocarTurno() {
+    turno = turno === 'X' ? 'O' : 'X';
+    mensagem.textContent = `Turno do jogador ${turno}`;
+  }
+
+  function verificarVitoria(jogador) {
+    const vitorias = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return vitorias.some(comb => comb.every(i => tab[i] === jogador));
+  }
+
+  function jogadaIA() {
+    const nivel = seletorModo.value;
+    let jogada;
+
+    if (nivel === 'iaFacil') {
+      jogada = jogadaRandomica();
+    } else if (nivel === 'iaMedio') {
+      jogada = jogadaMedio();
+    } else if (nivel === 'iaDificil') {
+      jogada = jogadaMinimax(tab.slice(), 'O').index;
+    }
+
+    if (jogada !== undefined) {
+      tab[jogada] = 'O';
+      atualizarTabuleiro();
+
+      if (verificarVitoria('O')) {
+        placar['O']++;
+        placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+        mensagem.textContent = 'Jogador O (IA) venceu!';
+        jogoAtivo = false;
+        return;
+      }
+
+      if (!tab.includes('')) {
+        mensagem.textContent = 'Empate!';
+        jogoAtivo = false;
+        return;
+      }
+
+      trocarTurno();
+    }
+  }
+
+  function jogadaRandomica() {
+    const vazias = tab.map((v,i) => v === '' ? i : null).filter(v => v !== null);
+    if (vazias.length === 0) return undefined;
+    return vazias[Math.floor(Math.random() * vazias.length)];
+  }
+
+  function jogadaMedio() {
+    for (let i = 0; i < 9; i++) {
+      if (tab[i] === '') {
+        tab[i] = 'O';
+        if (verificarVitoria('O')) {
+          tab[i] = '';
+          return i;
+        }
+        tab[i] = '';
+      }
+    }
+    for (let i = 0; i < 9; i++) {
+      if (tab[i] === '') {
+        tab[i] = 'X';
+        if (verificarVitoria('X')) {
+          tab[i] = '';
+          return i;
+        }
+        tab[i] = '';
+      }
+    }
+    return jogadaRandomica();
+  }
+
+  function jogadaMinimax(nTab, jogador) {
+    const oposto = jogador === 'O' ? 'X' : 'O';
+
+    if (verificarVitoriaMinimax(nTab, 'X')) return {score: -10};
+    if (verificarVitoriaMinimax(nTab, 'O')) return {score: 10};
+    if (!nTab.includes('')) return {score: 0};
+
+    let moves = [];
+
+    for (let i = 0; i < 9; i++) {
+      if (nTab[i] === '') {
+        let move = {};
+        move.index = i;
+        nTab[i] = jogador;
+
+        let result = jogadaMinimax(nTab, oposto);
+        move.score = result.score;
+
+        nTab[i] = '';
+        moves.push(move);
+      }
+    }
+
+    let melhorMove;
+    if (jogador === 'O') {
+      let melhorScore = -Infinity;
+      for (let i = 0; i < moves.length; i++) {
+        if (moves[i].score > melhorScore) {
+          melhorScore = moves[i].score;
+          melhorMove = moves[i];
+        }
+      }
     } else {
-      currentPlayer = currentPlayer === "X" ? "O" : "X";
-      updateStatus(`Vez do jogador ${currentPlayer}`);
-      if(mode !== "2players" && currentPlayer === "O" && gameActive) {
-        setTimeout(aiMove, 500);
+      let melhorScore = Infinity;
+      for (let i = 0; i < moves.length; i++) {
+        if (moves[i].score < melhorScore) {
+          melhorScore = moves[i].score;
+          melhorMove = moves[i];
+        }
       }
     }
+
+    return melhorMove;
   }
-}
 
-function aiMove() {
-  if(!gameActive) return;
-  let moveIndex;
-  switch(mode) {
-    case "easy":
-      moveIndex = aiEasy();
-      break;
-    case "medium":
-      moveIndex = aiMedium();
-      break;
-    case "hard":
-      moveIndex = aiHard();
-      break;
+  function verificarVitoriaMinimax(board, jogador) {
+    const vitorias = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return vitorias.some(comb => comb.every(i => board[i] === jogador));
   }
-  makeMove(moveIndex, "O");
-}
 
-// IA Fácil: escolhe uma posição aleatória vazia
-function aiEasy() {
-  const emptyIndices = board.map((v,i) => v === "" ? i : null).filter(i => i !== null);
-  const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-  return randomIndex;
-}
-
-// IA Médio: tenta ganhar ou bloquear, senão escolhe aleatório
-function aiMedium() {
-  // Tenta ganhar
-  for(let i = 0; i < board.length; i++) {
-    if(board[i] === "") {
-      board[i] = "O";
-      if(checkWin("O")) {
-        board[i] = "";
-        return i;
-      }
-      board[i] = "";
-    }
+  function reiniciarJogo() {
+    tab = Array(9).fill('');
+    turno = 'X';
+    jogoAtivo = true;
+    mensagem.textContent = `Turno do jogador ${turno}`;
+    placarDiv.textContent = `Jogador X: ${placar.X} | Jogador O: ${placar.O}`;
+    criarTabuleiro();
   }
-  // Tenta bloquear o X
-  for(let i = 0; i < board.length; i++) {
-    if(board[i] === "") {
-      board[i] = "X";
-      if(checkWin("X")) {
-        board[i] = "";
-        return i;
-      }
-      board[i] = "";
-    }
-  }
-  // Aleatório
-  return aiEasy();
-}
 
-// IA Difícil: usa Minimax para a melhor jogada
-function aiHard() {
-  let bestScore = -Infinity;
-  let bestMove;
-  for(let i = 0; i < board.length; i++) {
-    if(board[i] === "") {
-      board[i] = "O";
-      let score = minimax(board, 0, false);
-      board[i] = "";
-      if(score > bestScore) {
-        bestScore = score;
-        bestMove = i;
-      }
-    }
-  }
-  return bestMove;
-}
+  btnReiniciar.addEventListener('click', reiniciarJogo);
+  seletorModo.addEventListener('change', reiniciarJogo);
 
-function minimax(boardState, depth, isMaximizing) {
-  if(checkWin("O")) return 10 - depth;
-  if(checkWin("X")) return depth - 10;
-  if(checkDraw()) return 0;
-
-  if(isMaximizing) {
-    let bestScore = -Infinity;
-    for(let i = 0; i < boardState.length; i++) {
-      if(boardState[i] === "") {
-        boardState[i] = "O";
-        let score = minimax(boardState, depth + 1, false);
-        boardState[i] = "";
-        bestScore = Math.max(score, bestScore);
-      }
-    }
-    return bestScore;
-  } else {
-    let bestScore = Infinity;
-    for(let i = 0; i < boardState.length; i++) {
-      if(boardState[i] === "") {
-        boardState[i] = "X";
-        let score = minimax(boardState, depth + 1, true);
-        boardState[i] = "";
-        bestScore = Math.min(score, bestScore);
-      }
-    }
-    return bestScore;
-  }
-}
-
-// Atualiza o modo quando o usuário muda a opção
-modeRadios.forEach(radio => {
-  radio.addEventListener("change", () => {
-    mode = radio.value;
-    restartGame();
-  });
-});
-
-function restartGame() {
-  board = ["", "", "", "", "", "", "", "", ""];
-  currentPlayer = "X";
-  gameActive = true;
-  updateStatus(`Vez do jogador ${currentPlayer}`);
-  boardCells.forEach(cell => {
-    cell.textContent = "";
-    cell.classList.remove("disabled");
-  });
-}
-
-// Evento dos cliques nas células
-boardCells.forEach(cell => {
-  cell.addEventListener("click", () => {
-    if(gameActive && currentPlayer === "X") {
-      const idx = parseInt(cell.getAttribute("data-index"));
-      makeMove(idx, "X");
-    }
-  });
-});
-
-// Evento do botão reiniciar
-restartBtn.addEventListener("click", restartGame);
-
+  criarTabuleiro();
 </script>
 
 </body>
