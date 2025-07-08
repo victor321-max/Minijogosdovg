@@ -1,101 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Jogo da Velha</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background-color: #f0f0f0;
-    }
-    table {
-      margin: 0 auto;
-      border-collapse: collapse;
-    }
-    td {
-      width: 80px;
-      height: 80px;
-      border: 2px solid #333;
-      font-size: 48px;
-      cursor: pointer;
-      text-align: center;
-      vertical-align: middle;
-    }
-    #status {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Jogo da Velha - Modos</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    background: #f0f0f0;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  #mode-select {
+    margin-bottom: 20px;
+  }
+  table {
+    margin: 0 auto;
+    border-collapse: collapse;
+  }
+  td {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #333;
+    font-size: 48px;
+    cursor: pointer;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+  }
+  td.disabled {
+    cursor: not-allowed;
+    color: #999;
+  }
+  #status {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <h1>Jogo da Velha</h1>
-  <table id="board">
-    <tr>
-      <td></td><td></td><td></td>
-    </tr>
-    <tr>
-      <td></td><td></td><td></td>
-    </tr>
-    <tr>
-      <td></td><td></td><td></td>
-    </tr>
-  </table>
-  <div id="status">Vez do jogador X</div>
-  <button id="restart">Reiniciar</button>
 
-  <script>
-    const board = document.querySelectorAll("td");
-    const status = document.getElementById("status");
-    const restartBtn = document.getElementById("restart");
+<h1>Jogo da Velha</h1>
 
-    let currentPlayer = "X";
-    let gameActive = true;
+<div id="mode-select">
+  <label><input type="radio" name="mode" value="2players" checked> 2 Jogadores</label>
+  <label><input type="radio" name="mode" value="easy"> IA Fácil</label>
+  <label><input type="radio" name="mode" value="medium"> IA Médio</label>
+  <label><input type="radio" name="mode" value="hard"> IA Difícil</label>
+</div>
 
-    const winningCombos = [
-      [0,1,2], [3,4,5], [6,7,8],
-      [0,3,6], [1,4,7], [2,5,8],
-      [0,4,8], [2,4,6]
-    ];
+<table id="board">
+  <tr><td data-index="0"></td><td data-index="1"></td><td data-index="2"></td></tr>
+  <tr><td data-index="3"></td><td data-index="4"></td><td data-index="5"></td></tr>
+  <tr><td data-index="6"></td><td data-index="7"></td><td data-index="8"></td></tr>
+</table>
 
-    board.forEach((cell, index) => {
-      cell.addEventListener("click", () => {
-        if (cell.textContent === "" && gameActive) {
-          cell.textContent = currentPlayer;
-          if (checkWin()) {
-            status.textContent = `Jogador ${currentPlayer} venceu! 🎉`;
-            gameActive = false;
-          } else if ([...board].every(c => c.textContent !== "")) {
-            status.textContent = "Empate!";
-            gameActive = false;
-          } else {
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-            status.textContent = `Vez do jogador ${currentPlayer}`;
-          }
-        }
-      });
-    });
+<div id="status">Vez do jogador X</div>
+<button id="restart">Reiniciar</button>
 
-    restartBtn.addEventListener("click", () => {
-      board.forEach(cell => cell.textContent = "");
-      currentPlayer = "X";
-      gameActive = true;
-      status.textContent = "Vez do jogador X";
-    });
+<script>
+const boardCells = document.querySelectorAll("#board td");
+const status = document.getElementById("status");
+const restartBtn = document.getElementById("restart");
+const modeRadios = document.querySelectorAll('input[name="mode"]');
 
-    function checkWin() {
-      return winningCombos.some(combo => {
-        return combo.every(i => board[i].textContent === currentPlayer);
-      });
+let board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let gameActive = true;
+let mode = "2players";
+
+// Combinações vencedoras
+const winningCombos = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function checkWin(player) {
+  return winningCombos.some(combo => 
+    combo.every(i => board[i] === player)
+  );
+}
+
+function checkDraw() {
+  return board.every(cell => cell !== "");
+}
+
+function updateStatus(text) {
+  status.textContent = text;
+}
+
+function makeMove(index, player) {
+  if(board[index] === "" && gameActive) {
+    board[index] = player;
+    boardCells[index].textContent = player;
+    boardCells[index].classList.add("disabled");
+    if(checkWin(player)) {
+      updateStatus(`Jogador ${player} venceu! 🎉`);
+      gameActive = false;
+    } else if(checkDraw()) {
+      updateStatus("Empate!");
+      gameActive = false;
+    } else {
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      updateStatus(`Vez do jogador ${currentPlayer}`);
+      if(mode !== "2players" && currentPlayer === "O" && gameActive) {
+        setTimeout(aiMove, 500);
+      }
     }
-  </script>
+  }
+}
+
+function aiMove() {
+  if(!gameActive) return;
+  let moveIndex;
+  switch(mode) {
+    case "easy":
+      moveIndex = aiEasy();
+      break;
+    case "medium":
+      moveIndex = aiMedium();
+      break;
+    case "hard":
+      moveIndex = aiHard();
+      break;
+  }
+  makeMove(moveIndex, "O");
+}
+
+// IA Fácil: escolhe uma posição aleatória vazia
+function aiEasy() {
+  const emptyIndices = board.map((v,i) => v === "" ? i : null).filter(i => i !== null);
+  const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+  return randomIndex;
+}
+
+// IA Médio: tenta ganhar ou bloquear, senão escolhe aleatório
+function aiMedium() {
+  // Tenta ganhar
+  for(let i = 0; i < board.length; i++) {
+    if(board[i] === "") {
+      board[i] = "O";
+      if(checkWin("O")) {
+        board[i] = "";
+        return i;
+      }
+      board[i] = "";
+    }
+  }
+  // Tenta bloquear o X
+  for(let i = 0; i < board.length; i++) {
+    if(board[i] === "") {
+      board[i] = "X";
+      if(checkWin("X")) {
+        board[i] = "";
+        return i;
+      }
+      board[i] = "";
+    }
+  }
+  // Aleatório
+  return aiEasy();
+}
+
+// IA Difícil: usa Minimax para a melhor jogada
+function aiHard() {
+  let bestScore = -Infinity;
+  let bestMove;
+  for(let i = 0; i < board.length; i++) {
+    if(board[i] === "") {
+      board[i] = "O";
+      let score = minimax(board, 0, false);
+      board[i] = "";
+      if(score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    }
+  }
+  return bestMove;
+}
+
+function minimax(boardState, depth, isMaximizing) {
+  if(checkWin("O")) return 10 - depth;
+  if(checkWin("X")) return depth - 10;
+  if(checkDraw()) return 0;
+
+  if(isMaximizing) {
+    let bestScore = -Infinity;
+    for(let i = 0; i < boardState.length; i++) {
+      if(boardState[i] === "") {
+        boardState[i] = "O";
+        let score = minimax(boardState, depth + 1, false);
+        boardState[i] = "";
+        bestScore = Math.max(score, bestScore);
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for(let i = 0; i < boardState.length; i++) {
+      if(boardState[i] === "") {
+        boardState[i] = "X";
+        let score = minimax(boardState, depth + 1, true);
+        boardState[i] = "";
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  }
+}
+
+// Atualiza o modo quando o usuário muda a opção
+modeRadios.forEach(radio => {
+  radio.addEventListener("change", () => {
+    mode = radio.value;
+    restartGame();
+  });
+});
+
+function restartGame() {
+  board = ["", "", "", "", "", "", "", "", ""];
+  currentPlayer = "X";
+  gameActive = true;
+  updateStatus(`Vez do jogador ${currentPlayer}`);
+  boardCells.forEach(cell => {
+    cell.textContent = "";
+    cell.classList.remove("disabled");
+  });
+}
+
+// Evento dos cliques nas células
+boardCells.forEach(cell => {
+  cell.addEventListener("click", () => {
+    if(gameActive && currentPlayer === "X") {
+      const idx = parseInt(cell.getAttribute("data-index"));
+      makeMove(idx, "X");
+    }
+  });
+});
+
+// Evento do botão reiniciar
+restartBtn.addEventListener("click", restartGame);
+
+</script>
+
 </body>
-</html>
+  </html>
