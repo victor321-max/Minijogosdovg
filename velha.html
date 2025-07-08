@@ -8,7 +8,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 40px;
-      background-color: #f9f9f9;
+      background-color: #f0f0f0;
     }
     table {
       margin: 0 auto;
@@ -40,88 +40,62 @@
   <h1>Jogo da Velha</h1>
   <table id="board">
     <tr>
-      <td data-cell></td>
-      <td data-cell></td>
-      <td data-cell></td>
+      <td></td><td></td><td></td>
     </tr>
     <tr>
-      <td data-cell></td>
-      <td data-cell></td>
-      <td data-cell></td>
+      <td></td><td></td><td></td>
     </tr>
     <tr>
-      <td data-cell></td>
-      <td data-cell></td>
-      <td data-cell></td>
+      <td></td><td></td><td></td>
     </tr>
   </table>
   <div id="status">Vez do jogador X</div>
-  <button id="restartButton">Reiniciar Jogo</button>
+  <button id="restart">Reiniciar</button>
 
   <script>
-    const cells = document.querySelectorAll('[data-cell]');
-    let currentPlayer = 'X';
+    const board = document.querySelectorAll("td");
+    const status = document.getElementById("status");
+    const restartBtn = document.getElementById("restart");
+
+    let currentPlayer = "X";
     let gameActive = true;
 
-    const statusDisplay = document.getElementById('status');
-    const restartButton = document.getElementById('restartButton');
-
-    const winningConditions = [
-      [0,1,2],
-      [3,4,5],
-      [6,7,8],
-      [0,3,6],
-      [1,4,7],
-      [2,5,8],
-      [0,4,8],
-      [2,4,6]
+    const winningCombos = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
     ];
 
-    function handleCellClick(e) {
-      const cell = e.target;
-      const cellIndex = Array.from(cells).indexOf(cell);
+    board.forEach((cell, index) => {
+      cell.addEventListener("click", () => {
+        if (cell.textContent === "" && gameActive) {
+          cell.textContent = currentPlayer;
+          if (checkWin()) {
+            status.textContent = `Jogador ${currentPlayer} venceu! 🎉`;
+            gameActive = false;
+          } else if ([...board].every(c => c.textContent !== "")) {
+            status.textContent = "Empate!";
+            gameActive = false;
+          } else {
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            status.textContent = `Vez do jogador ${currentPlayer}`;
+          }
+        }
+      });
+    });
 
-      if (cell.textContent !== '' || !gameActive) {
-        return;
-      }
-
-      cell.textContent = currentPlayer;
-      if (checkWin()) {
-        statusDisplay.textContent = `Jogador ${currentPlayer} venceu! 🎉`;
-        gameActive = false;
-        return;
-      }
-
-      if (checkDraw()) {
-        statusDisplay.textContent = 'Empate!';
-        gameActive = false;
-        return;
-      }
-
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      statusDisplay.textContent = `Vez do jogador ${currentPlayer}`;
-    }
+    restartBtn.addEventListener("click", () => {
+      board.forEach(cell => cell.textContent = "");
+      currentPlayer = "X";
+      gameActive = true;
+      status.textContent = "Vez do jogador X";
+    });
 
     function checkWin() {
-      return winningConditions.some(condition => {
-        return condition.every(index => {
-          return cells[index].textContent === currentPlayer;
-        });
+      return winningCombos.some(combo => {
+        return combo.every(i => board[i].textContent === currentPlayer);
       });
     }
-
-    function checkDraw() {
-      return [...cells].every(cell => cell.textContent !== '');
-    }
-
-    function restartGame() {
-      cells.forEach(cell => cell.textContent = '');
-      currentPlayer = 'X';
-      gameActive = true;
-      statusDisplay.textContent = `Vez do jogador ${currentPlayer}`;
-    }
-
-    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
-    restartButton.addEventListener('click', restartGame);
   </script>
 </body>
+</html>
