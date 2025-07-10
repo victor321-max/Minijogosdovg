@@ -1,168 +1,153 @@
 <!DOCTYPE html><html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jogo da Forca</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #6a11cb, #2575fc);
+      background: linear-gradient(to bottom, #6a11cb, #2575fc);
       color: white;
       text-align: center;
-      margin: 0;
       padding: 20px;
     }
     h1 {
       font-size: 36px;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px black;
     }
     #forca {
-      font-size: 80px;
-      margin: 20px 0;
+      font-size: 24px;
+      margin: 20px;
+      white-space: pre;
     }
-    #palavra {
-      font-size: 30px;
-      letter-spacing: 10px;
-      margin-bottom: 20px;
-    }
-    #letrasUsadas {
-      margin-top: 10px;
-    }
-    input {
-      padding: 10px;
-      font-size: 18px;
-      width: 60px;
-      text-align: center;
+    #palavra, #letras, #mensagem, #placar {
+      margin: 15px 0;
+      font-size: 20px;
     }
     button {
       padding: 10px 20px;
+      margin: 10px;
       font-size: 18px;
-      margin: 5px;
-      cursor: pointer;
-      border-radius: 10px;
+      background: #00bcd4;
+      color: white;
       border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    #dicaBtn svg {
-      vertical-align: middle;
-      width: 24px;
-      height: 24px;
-      fill: yellow;
+    button:hover {
+      background: #0097a7;
     }
-    #resultado, #pontuacao {
-      font-size: 20px;
-      margin-top: 15px;
+    #dicaBtn {
+      background: gold;
+      color: black;
     }
   </style>
 </head>
 <body>
   <h1>Jogo da Forca</h1>
-  <div id="forca">L</div>
-  <div id="palavra">- - - - -</div>  <input type="text" id="letra" maxlength="1" />
-  <button onclick="chutar()">Chutar</button>
-  <button onclick="novoJogo()">Novo Jogo</button>
-  <button id="dicaBtn" onclick="mostrarDica()" title="Dica">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M9 21h6v-2H9v2zm3-19C7.48 2 4 5.48 4 10c0 2.76 1.66 5.1 4.03 6.21L8 19h8l-.03-2.79C18.34 15.1 20 12.76 20 10c0-4.52-3.48-8-8-8z"/>
-    </svg>
-  </button>  <div id="dica"></div>
-  <div id="letrasUsadas">Letras usadas: </div>
-  <div id="resultado"></div>
-  <div id="pontuacao">Vitórias: 0 | Derrotas: 0</div>  <script>
+  <div id="forca">_____
+ |
+ |
+ |
+_|_</div>
+  <div id="palavra"></div>
+  <div id="letras"></div>
+  <input type="text" id="entrada" maxlength="1" placeholder="Digite uma letra" oninput="verificarLetra(this.value.toLowerCase()); this.value='';" />
+  <br />
+  <button onclick="novaPalavra()">Nova Palavra</button>
+  <button id="dicaBtn" onclick="mostrarDica()">💡 Dica</button>
+  <div id="mensagem"></div>
+  <div id="placar">Vitórias: 0 | Derrotas: 0</div>  <script>
     const palavras = [
-      { palavra: "continente", dicas: ["Tem 10 letras"] },
-      { palavra: "abacaxi", dicas: ["Tem 7 letras"] },
-      { palavra: "futebol", dicas: ["Tem 7 letras"] },
-      { palavra: "escola", dicas: ["Tem 6 letras"] },
-      { palavra: "brasil", dicas: ["Tem 6 letras"] },
+      'capoeira','brasil','espada','mestre','banana','campista','violao','girassol','montanha','cachorro','computador','praia','floresta','bicicleta','ferrovia','abacaxi','chuveiro','alicate','mistura','chuva','estrela','planeta','oceano','gramado','folhagem','travesseiro','jornal','relampago','colher','janela','cadeira','brinquedo','marmita','livro','escola','igreja','parque','relogio','sabado','domingo','foguete','corda','fivela','tijolo','quadro','aviao','bola','guitarra','pandeiro','papel','nuvem','passaro','anel','lampada','sorvete','lousa','barco','meia','chinelo','dado','dente','mochila','linha','vento','morcego','diamante','lobo','marte','terra','fogo','agua','vento','neve','chave','tijolo','tapete','copo','prato','garfo','colher','tesoura','leite','suco','cachorro','gato','papagaio','jacare','girafa','elefante'
     ];
 
-    let palavraAtual = "";
-    let exibicao = [];
-    let letrasUsadas = [];
-    let erros = 0;
-    let maxErros = 6;
-    let dicasUsadas = 0;
+    let palavra = '';
+    let palavraExibida = '';
+    let letrasErradas = [];
+    let letrasCertas = [];
+    let partes = 0;
     let vitorias = 0;
     let derrotas = 0;
+    let dicasUsadas = 0;
 
-    function gerarPalavra() {
-      const aleatoria = palavras[Math.floor(Math.random() * palavras.length)];
-      palavraAtual = aleatoria.palavra;
-      exibicao = Array(palavraAtual.length).fill("_");
-      aleatoria.dicasExtra = gerarDicasExtras(palavraAtual);
-      aleatoria.todasDicas = [aleatoria.dicas[0], ...aleatoria.dicasExtra];
-      palavraAtualObj = aleatoria;
-    }
-
-    function gerarDicasExtras(palavra) {
-      let dicas = [];
-      const max = palavra.length >= 8 ? 3 : 2;
-      while (dicas.length < max) {
-        const i = Math.floor(Math.random() * palavra.length);
-        const letra = palavra[i];
-        if (!dicas.includes(`A letra ${letra.toUpperCase()} aparece na palavra`)) {
-          dicas.push(`A letra ${letra.toUpperCase()} aparece na palavra`);
-        }
-      }
-      return dicas;
-    }
-
-    function atualizarInterface() {
-      document.getElementById("palavra").textContent = exibicao.join(" ");
-      document.getElementById("letrasUsadas").textContent = "Letras usadas: " + letrasUsadas.join(", ");
-      document.getElementById("forca").textContent = "L".repeat(erros + 1);
-      document.getElementById("pontuacao").textContent = `Vitórias: ${vitorias} | Derrotas: ${derrotas}`;
-    }
-
-    function chutar() {
-      const input = document.getElementById("letra");
-      const letra = input.value.toLowerCase();
-      input.value = "";
-      if (!letra || letrasUsadas.includes(letra)) return;
-
-      letrasUsadas.push(letra);
-      let acertou = false;
-      for (let i = 0; i < palavraAtual.length; i++) {
-        if (palavraAtual[i] === letra) {
-          exibicao[i] = letra;
-          acertou = true;
-        }
-      }
-
-      if (!acertou) erros++;
-
-      if (exibicao.join("") === palavraAtual) {
-        document.getElementById("resultado").textContent = "Vitória!";
-        vitorias++;
-      } else if (erros >= maxErros) {
-        document.getElementById("resultado").textContent = `Perdeu! A palavra era: ${palavraAtual}`;
-        derrotas++;
-      }
-
-      atualizarInterface();
-    }
-
-    function novoJogo() {
-      gerarPalavra();
-      letrasUsadas = [];
-      erros = 0;
+    function novaPalavra() {
+      palavra = palavras[Math.floor(Math.random() * palavras.length)].toLowerCase();
+      palavraExibida = '_ '.repeat(palavra.length);
+      letrasErradas = [];
+      letrasCertas = [];
+      partes = 0;
       dicasUsadas = 0;
-      exibicao = Array(palavraAtual.length).fill("_");
-      document.getElementById("resultado").textContent = "";
-      document.getElementById("dica").textContent = "";
-      atualizarInterface();
+      atualizarForca();
+      atualizarTela();
+      document.getElementById('mensagem').textContent = '';
+    }
+
+    function atualizarTela() {
+      let exibida = '';
+      for (let letra of palavra) {
+        exibida += letrasCertas.includes(letra) ? letra + ' ' : '_ ';
+      }
+      palavraExibida = exibida;
+      document.getElementById('palavra').textContent = exibida.trim();
+      document.getElementById('letras').textContent = 'Letras erradas: ' + letrasErradas.join(', ');
+      document.getElementById('placar').textContent = `Vitórias: ${vitorias} | Derrotas: ${derrotas}`;
+    }
+
+    function verificarLetra(letra) {
+      if (!letra.match(/[a-z]/) || letrasErradas.includes(letra) || letrasCertas.includes(letra)) return;
+      if (palavra.includes(letra)) {
+        letrasCertas.push(letra);
+      } else {
+        letrasErradas.push(letra);
+        partes++;
+        atualizarForca();
+      }
+      atualizarTela();
+      verificarFim();
+    }
+
+    function atualizarForca() {
+      let boneco = [
+        '_____',
+        ' |   |',
+        partes > 0 ? ' |   O' : ' |',
+        partes > 1 ? ` |  ${partes > 3 ? '/' : ' '}|${partes > 2 ? '\\' : ' '}` : ' |',
+        partes > 4 ? ' |  / \\' : partes > 3 ? ' |  /' : ' |',
+        '_|_'
+      ];
+      document.getElementById('forca').textContent = boneco.join('\n');
+    }
+
+    function verificarFim() {
+      if (!palavra.split('').some(l => !letrasCertas.includes(l))) {
+        document.getElementById('mensagem').textContent = 'Você venceu!';
+        vitorias++;
+        atualizarTela();
+      } else if (partes >= 6) {
+        document.getElementById('mensagem').textContent = 'Você perdeu! A palavra era: ' + palavra;
+        derrotas++;
+        atualizarTela();
+      }
     }
 
     function mostrarDica() {
-      if (dicasUsadas < palavraAtualObj.todasDicas.length) {
-        document.getElementById("dica").textContent = palavraAtualObj.todasDicas[dicasUsadas];
-        dicasUsadas++;
+      dicasUsadas++;
+      if (dicasUsadas === 1) {
+        alert(`A palavra tem ${palavra.length} letras.`);
       } else {
-        document.getElementById("dica").textContent = "Sem mais dicas para essa palavra.";
+        const letrasFaltando = palavra.split('').filter(l => !letrasCertas.includes(l));
+        if (letrasFaltando.length > 0) {
+          const dicaLetra = letrasFaltando[Math.floor(Math.random() * letrasFaltando.length)];
+          alert(`Uma das letras é: "${dicaLetra}"`);
+        } else {
+          alert('Não há mais letras para mostrar.');
+        }
       }
     }
 
-    let palavraAtualObj;
-    novoJogo();
+    novaPalavra();
   </script></body>
 </html>
