@@ -1,153 +1,416 @@
-<!DOCTYPE html><html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jogo da Forca</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom, #6a11cb, #2575fc);
-      color: white;
-      text-align: center;
-      padding: 20px;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo da Forca - Mini Jogos do Victor</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    user-select: none;
+  }
+  h1 {
+    margin-bottom: 15px;
+    font-size: 2.8rem;
+    text-shadow: 2px 2px 5px #0008;
+    font-weight: 900;
+  }
+  #forca-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: rgba(0,0,0,0.3);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 15px #0009;
+  }
+  #boneco {
+    margin: 0 auto 20px;
+    width: 200px;
+    height: 250px;
+    position: relative;
+  }
+  /* Forca: base e estrutura */
+  #forca-base {
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    width: 160px;
+    height: 15px;
+    background: #fff;
+    border-radius: 5px;
+  }
+  #forca-pilar {
+    position: absolute;
+    bottom: 15px;
+    left: 40px;
+    width: 15px;
+    height: 200px;
+    background: #fff;
+    border-radius: 5px;
+  }
+  #forca-barra {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    width: 100px;
+    height: 15px;
+    background: #fff;
+    border-radius: 5px 5px 0 0;
+  }
+  #forca-corda {
+    position: absolute;
+    top: 15px;
+    left: 135px;
+    width: 4px;
+    height: 35px;
+    background: #fff;
+    border-radius: 2px;
+  }
+  /* Partes do boneco */
+  .parte {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    display: none;
+  }
+  #cabeca {
+    width: 50px;
+    height: 50px;
+    top: 50px;
+    left: 110px;
+    border-radius: 50%;
+    display: none;
+  }
+  #tronco {
+    width: 15px;
+    height: 80px;
+    top: 100px;
+    left: 132px;
+    border-radius: 0;
+    display: none;
+  }
+  #braco-esq {
+    width: 15px;
+    height: 60px;
+    top: 100px;
+    left: 90px;
+    transform: rotate(-40deg);
+    transform-origin: top right;
+    border-radius: 0;
+    display: none;
+  }
+  #braco-dir {
+    width: 15px;
+    height: 60px;
+    top: 100px;
+    left: 155px;
+    transform: rotate(40deg);
+    transform-origin: top left;
+    border-radius: 0;
+    display: none;
+  }
+  #perna-esq {
+    width: 15px;
+    height: 60px;
+    top: 180px;
+    left: 95px;
+    transform: rotate(40deg);
+    transform-origin: top right;
+    border-radius: 0;
+    display: none;
+  }
+  #perna-dir {
+    width: 15px;
+    height: 60px;
+    top: 180px;
+    left: 140px;
+    transform: rotate(-40deg);
+    transform-origin: top left;
+    border-radius: 0;
+    display: none;
+  }
+
+  #palavra {
+    font-size: 2.2rem;
+    letter-spacing: 12px;
+    margin: 20px 0;
+    font-weight: 700;
+    user-select: none;
+  }
+  #letras-usadas {
+    margin-top: 10px;
+    font-size: 1.2rem;
+  }
+  #input-letra {
+    font-size: 1.5rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    width: 60px;
+    text-align: center;
+    font-weight: 700;
+  }
+  button {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background 0.3s;
+    color: #2575fc;
+  }
+  button:hover {
+    background: #cfdfff;
+  }
+  #mensagem {
+    margin-top: 15px;
+    font-size: 1.3rem;
+    min-height: 40px;
+    font-weight: 700;
+  }
+  #placar {
+    margin-top: 25px;
+    font-size: 1.4rem;
+  }
+  @media(max-width: 500px) {
+    #palavra {
+      letter-spacing: 6px;
+      font-size: 1.6rem;
     }
-    h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-      text-shadow: 2px 2px 5px black;
+    #boneco {
+      width: 150px;
+      height: 190px;
     }
-    #forca {
-      font-size: 24px;
-      margin: 20px;
-      white-space: pre;
+    #forca-base {
+      width: 120px;
+      height: 12px;
+      left: 15px;
     }
-    #palavra, #letras, #mensagem, #placar {
-      margin: 15px 0;
-      font-size: 20px;
+    #forca-pilar {
+      height: 150px;
+      left: 30px;
     }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 18px;
-      background: #00bcd4;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
+    #forca-barra {
+      width: 75px;
+      height: 12px;
+      left: 30px;
     }
-    button:hover {
-      background: #0097a7;
+    #forca-corda {
+      height: 25px;
+      left: 105px;
+      width: 3px;
     }
-    #dicaBtn {
-      background: gold;
-      color: black;
+    #cabeca {
+      width: 40px;
+      height: 40px;
+      top: 40px;
+      left: 90px;
     }
-  </style>
+    #tronco {
+      height: 65px;
+      top: 80px;
+      left: 110px;
+      width: 12px;
+    }
+    #braco-esq, #braco-dir, #perna-esq, #perna-dir {
+      width: 12px;
+      height: 50px;
+    }
+    #braco-esq {
+      top: 80px;
+      left: 72px;
+    }
+    #braco-dir {
+      top: 80px;
+      left: 130px;
+    }
+    #perna-esq {
+      top: 145px;
+      left: 73px;
+    }
+    #perna-dir {
+      top: 145px;
+      left: 120px;
+    }
+  }
+</style>
 </head>
 <body>
-  <h1>Jogo da Forca</h1>
-  <div id="forca">_____
- |
- |
- |
-_|_</div>
+
+<h1>Jogo da Forca</h1>
+
+<div id="forca-container">
+
+  <div id="boneco">
+    <div id="forca-base"></div>
+    <div id="forca-pilar"></div>
+    <div id="forca-barra"></div>
+    <div id="forca-corda"></div>
+    <div class="parte" id="cabeca"></div>
+    <div class="parte" id="tronco"></div>
+    <div class="parte" id="braco-esq"></div>
+    <div class="parte" id="braco-dir"></div>
+    <div class="parte" id="perna-esq"></div>
+    <div class="parte" id="perna-dir"></div>
+  </div>
+
   <div id="palavra"></div>
-  <div id="letras"></div>
-  <input type="text" id="entrada" maxlength="1" placeholder="Digite uma letra" oninput="verificarLetra(this.value.toLowerCase()); this.value='';" />
-  <br />
-  <button onclick="novaPalavra()">Nova Palavra</button>
-  <button id="dicaBtn" onclick="mostrarDica()">💡 Dica</button>
+
+  <div>
+    <input type="text" id="input-letra" maxlength="1" placeholder="Letra" autocomplete="off" />
+    <button id="btn-chutar">Chutar</button>
+    <button id="btn-novo">Novo Jogo</button>
+  </div>
+
+  <div id="letras-usadas">Letras usadas: <span id="usadas"></span></div>
   <div id="mensagem"></div>
-  <div id="placar">Vitórias: 0 | Derrotas: 0</div>  <script>
-    const palavras = [
-      'capoeira','brasil','espada','mestre','banana','campista','violao','girassol','montanha','cachorro','computador','praia','floresta','bicicleta','ferrovia','abacaxi','chuveiro','alicate','mistura','chuva','estrela','planeta','oceano','gramado','folhagem','travesseiro','jornal','relampago','colher','janela','cadeira','brinquedo','marmita','livro','escola','igreja','parque','relogio','sabado','domingo','foguete','corda','fivela','tijolo','quadro','aviao','bola','guitarra','pandeiro','papel','nuvem','passaro','anel','lampada','sorvete','lousa','barco','meia','chinelo','dado','dente','mochila','linha','vento','morcego','diamante','lobo','marte','terra','fogo','agua','vento','neve','chave','tijolo','tapete','copo','prato','garfo','colher','tesoura','leite','suco','cachorro','gato','papagaio','jacare','girafa','elefante'
-    ];
+  <div id="placar">Vitórias: 0 | Derrotas: 0</div>
+</div>
 
-    let palavra = '';
-    let palavraExibida = '';
-    let letrasErradas = [];
-    let letrasCertas = [];
-    let partes = 0;
-    let vitorias = 0;
-    let derrotas = 0;
-    let dicasUsadas = 0;
+<script>
+  const palavras = [
+    "javascript", "programacao", "computador", "internet", "algoritmo", "python",
+    "java", "html", "css", "react", "angular", "vue", "node", "express", "linux",
+    "windows", "apple", "google", "facebook", "twitter", "github", "firebase",
+    "mongodb", "sql", "docker", "kubernetes", "api", "json", "xml", "firebase",
+    "software", "hardware", "teclado", "mouse", "monitor", "processador", "memoria",
+    "armazenamento", "dados", "rede", "senha", "login", "usuario", "tecnologia",
+    "programador", "debug", "compilador", "variavel", "função", "classe", "objeto",
+    "interface", "metodo", "loop", "condicional", "array", "string", "numero",
+    "booleano", "constante", "evento", "callback", "assincrono", "promessa",
+    "prototipo", "heranca", "polimorfismo", "encapsulamento", "desenvolvimento",
+    "design", "teste", "documentacao", "deploy", "versao", "controle", "branch",
+    "merge", "commit", "push", "pull", "fork", "clone", "issue", "bug", "fix",
+    "release", "script", "framework", "biblioteca", "modulo", "pack", "build"
+  ];
 
-    function novaPalavra() {
-      palavra = palavras[Math.floor(Math.random() * palavras.length)].toLowerCase();
-      palavraExibida = '_ '.repeat(palavra.length);
-      letrasErradas = [];
-      letrasCertas = [];
-      partes = 0;
-      dicasUsadas = 0;
-      atualizarForca();
-      atualizarTela();
-      document.getElementById('mensagem').textContent = '';
+  let palavraAtual = "";
+  let letrasDescobertas = [];
+  let letrasUsadas = [];
+  let erros = 0;
+  let maxErros = 6;
+  let vitorias = 0;
+  let derrotas = 0;
+
+  const palavraDiv = document.getElementById("palavra");
+  const inputLetra = document.getElementById("input-letra");
+  const btnChutar = document.getElementById("btn-chutar");
+  const btnNovo = document.getElementById("btn-novo");
+  const usadasSpan = document.getElementById("usadas");
+  const mensagemDiv = document.getElementById("mensagem");
+  const placarDiv = document.getElementById("placar");
+  const partes = [
+    document.getElementById("cabeca"),
+    document.getElementById("tronco"),
+    document.getElementById("braco-esq"),
+    document.getElementById("braco-dir"),
+    document.getElementById("perna-esq"),
+    document.getElementById("perna-dir"),
+  ];
+
+  function escolherPalavra() {
+    const indice = Math.floor(Math.random() * palavras.length);
+    return palavras[indice].toUpperCase();
+  }
+
+  function mostrarPalavra() {
+    palavraDiv.textContent = letrasDescobertas.map(l => l ? l : "_").join(" ");
+  }
+
+  function atualizarUsadas() {
+    usadasSpan.textContent = letrasUsadas.join(", ");
+  }
+
+  function resetarJogo() {
+    palavraAtual = escolherPalavra();
+    letrasDescobertas = Array(palavraAtual.length).fill(null);
+    letrasUsadas = [];
+    erros = 0;
+    mensagemDiv.textContent = "";
+    inputLetra.value = "";
+    inputLetra.disabled = false;
+    btnChutar.disabled = false;
+    partes.forEach(p => p.style.display = "none");
+    mostrarPalavra();
+    atualizarUsadas();
+    atualizarPlacar();
+  }
+
+  function atualizarPlacar() {
+    placarDiv.textContent = `Vitórias: ${vitorias} | Derrotas: ${derrotas}`;
+  }
+
+  function chutarLetra() {
+    let letra = inputLetra.value.toUpperCase();
+    if (!letra.match(/^[A-ZÀ-Ú]$/)) {
+      mensagemDiv.textContent = "Digite uma letra válida!";
+      inputLetra.value = "";
+      return;
     }
-
-    function atualizarTela() {
-      let exibida = '';
-      for (let letra of palavra) {
-        exibida += letrasCertas.includes(letra) ? letra + ' ' : '_ ';
-      }
-      palavraExibida = exibida;
-      document.getElementById('palavra').textContent = exibida.trim();
-      document.getElementById('letras').textContent = 'Letras erradas: ' + letrasErradas.join(', ');
-      document.getElementById('placar').textContent = `Vitórias: ${vitorias} | Derrotas: ${derrotas}`;
+    if (letrasUsadas.includes(letra)) {
+      mensagemDiv.textContent = "Você já usou essa letra!";
+      inputLetra.value = "";
+      return;
     }
+    letrasUsadas.push(letra);
 
-    function verificarLetra(letra) {
-      if (!letra.match(/[a-z]/) || letrasErradas.includes(letra) || letrasCertas.includes(letra)) return;
-      if (palavra.includes(letra)) {
-        letrasCertas.push(letra);
-      } else {
-        letrasErradas.push(letra);
-        partes++;
-        atualizarForca();
-      }
-      atualizarTela();
-      verificarFim();
-    }
-
-    function atualizarForca() {
-      let boneco = [
-        '_____',
-        ' |   |',
-        partes > 0 ? ' |   O' : ' |',
-        partes > 1 ? ` |  ${partes > 3 ? '/' : ' '}|${partes > 2 ? '\\' : ' '}` : ' |',
-        partes > 4 ? ' |  / \\' : partes > 3 ? ' |  /' : ' |',
-        '_|_'
-      ];
-      document.getElementById('forca').textContent = boneco.join('\n');
-    }
-
-    function verificarFim() {
-      if (!palavra.split('').some(l => !letrasCertas.includes(l))) {
-        document.getElementById('mensagem').textContent = 'Você venceu!';
-        vitorias++;
-        atualizarTela();
-      } else if (partes >= 6) {
-        document.getElementById('mensagem').textContent = 'Você perdeu! A palavra era: ' + palavra;
-        derrotas++;
-        atualizarTela();
-      }
-    }
-
-    function mostrarDica() {
-      dicasUsadas++;
-      if (dicasUsadas === 1) {
-        alert(`A palavra tem ${palavra.length} letras.`);
-      } else {
-        const letrasFaltando = palavra.split('').filter(l => !letrasCertas.includes(l));
-        if (letrasFaltando.length > 0) {
-          const dicaLetra = letrasFaltando[Math.floor(Math.random() * letrasFaltando.length)];
-          alert(`Uma das letras é: "${dicaLetra}"`);
-        } else {
-          alert('Não há mais letras para mostrar.');
+    if (palavraAtual.includes(letra)) {
+      for(let i=0; i < palavraAtual.length; i++) {
+        if (palavraAtual[i] === letra) {
+          letrasDescobertas[i] = letra;
         }
       }
-    }
+      mostrarPalavra();
+      mensagemDiv.textContent = "Acertou!";
 
-    novaPalavra();
-  </script></body>
-</html>
+      if (!letrasDescobertas.includes(null)) {
+        mensagemDiv.textContent = "Parabéns, você venceu!";
+        vitorias++;
+        inputLetra.disabled = true;
+        btnChutar.disabled = true;
+        atualizarPlacar();
+      }
+    } else {
+      erros++;
+      partes[erros - 1].style.display = "block";
+      mensagemDiv.textContent = `Letra incorreta! Erros: ${erros} de ${maxErros}`;
+      if (erros === maxErros) {
+        mensagemDiv.textContent = `Você perdeu! A palavra era: ${palavraAtual}`;
+        derrotas++;
+        inputLetra.disabled = true;
+        btnChutar.disabled = true;
+        mostrarPalavraCompleta();
+        atualizarPlacar();
+      }
+    }
+    atualizarUsadas();
+    inputLetra.value = "";
+    inputLetra.focus();
+  }
+
+  function mostrarPalavraCompleta() {
+    letrasDescobertas = palavraAtual.split("");
+    mostrarPalavra();
+  }
+
+  btnChutar.addEventListener("click", chutarLetra);
+  inputLetra.addEventListener("keyup", e => {
+    if (e.key === "Enter") {
+      chutarLetra();
+    }
+  });
+  btnNovo.addEventListener("click", resetarJogo);
+
+  resetarJogo();
+</script>
+
+</body>
+  </html>
